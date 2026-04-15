@@ -7,17 +7,17 @@
    ============================================================ */
 
 /* ── 1. CONSTANTES ───────────────────────────────────────── */
-const SESSION_KEY   = "upla_session";
-const STORAGE_KEY   = "upla_semanas";
+const SESSION_KEY = "upla_session";
+const STORAGE_KEY = "upla_semanas";
 const SEMANAS_TOTAL = 16;
 
 /* ── 2. ESTADO DEL ADMINISTRADOR ─────────────────────────── */
 const estadoAdmin = {
-  sesion:          null,    // Datos del admin activo
-  semanas:         [],      // Lista de las 16 semanas
-  semanaEditando:  null,    // Número de semana en edición
-  pdfsEditando:    [],      // PDFs en el editor actual (arreglo temporal)
-  vistaActual:     "dashboard"  // "dashboard" | "semanas" | "editor"
+  sesion: null,    // Datos del admin activo
+  semanas: [],      // Lista de las 16 semanas
+  semanaEditando: null,    // Número de semana en edición
+  pdfsEditando: [],      // PDFs en el editor actual (arreglo temporal)
+  vistaActual: "dashboard"  // "dashboard" | "semanas" | "editor"
 };
 
 /* ── 3. INICIALIZACIÓN ────────────────────────────────────── */
@@ -74,10 +74,10 @@ function verificarAccesoAdmin() {
  * Mismo arreglo que en main.js — mantiene coherencia entre admin y portal.
  */
 const UNIDADES = [
-  { numero: 1, nombre: "Unidad I",   descripcion: "Fundamentos y Modelo Relacional",    semanas: [1,  2,  3,  4]  },
-  { numero: 2, nombre: "Unidad II",  descripcion: "Diseño Avanzado de Bases de Datos",  semanas: [5,  6,  7,  8]  },
-  { numero: 3, nombre: "Unidad III", descripcion: "Programación en Base de Datos",       semanas: [9,  10, 11, 12] },
-  { numero: 4, nombre: "Unidad IV",  descripcion: "Administración y Seguridad",          semanas: [13, 14, 15, 16] }
+  { numero: 1, nombre: "Unidad I", descripcion: "Fundamentos y Modelo Relacional", semanas: [1, 2, 3, 4] },
+  { numero: 2, nombre: "Unidad II", descripcion: "Diseño Avanzado de Bases de Datos", semanas: [5, 6, 7, 8] },
+  { numero: 3, nombre: "Unidad III", descripcion: "Programación en Base de Datos", semanas: [9, 10, 11, 12] },
+  { numero: 4, nombre: "Unidad IV", descripcion: "Administración y Seguridad", semanas: [13, 14, 15, 16] }
 ];
 
 /**
@@ -96,19 +96,19 @@ function obtenerUnidadDeSemana(numero) {
  * Las mismas que verá el estudiante en index.html.
  */
 async function cargarSemanas() {
-    const { data, error } = await window.supabaseClient
-        .from('semanas')
-        .select('*')
-        .order('numero_semana', { ascending: true });
+  const { data, error } = await window.supabaseClient
+    .from('semanas')
+    .select('*')
+    .order('numero_semana', { ascending: true });
 
-    if (error) {
-        mostrarToast("Error al conectar con Supabase", "error");
-        console.error(error);
-        return;
-    }
-    
-    estadoAdmin.semanas = data;
-    renderizarListaSemanas(); // Esta función se encarga de dibujar la tabla
+  if (error) {
+    mostrarToast("Error al conectar con Supabase", "error");
+    console.error(error);
+    return;
+  }
+
+  estadoAdmin.semanas = data;
+  renderizarListaSemanas(); // Esta función se encarga de dibujar la tabla
 }
 
 /**
@@ -119,11 +119,11 @@ function crearSemanasIniciales() {
   const semanas = [];
   for (let i = 1; i <= SEMANAS_TOTAL; i++) {
     semanas.push({
-      numero:             i,
-      titulo:             "",
-      descripcion:        "",
-      contenido:          "",
-      publicada:          false,
+      numero: i,
+      titulo: "",
+      descripcion: "",
+      contenido: "",
+      publicada: false,
       fechaActualizacion: null
     });
   }
@@ -147,7 +147,7 @@ function guardarSemanas() {
  */
 function renderizarInfoAdmin() {
   const navAdminNombre = document.getElementById("adminNombre");
-  const navAdminRol    = document.getElementById("adminRol");
+  const navAdminRol = document.getElementById("adminRol");
 
   if (navAdminNombre && estadoAdmin.sesion) {
     navAdminNombre.textContent = estadoAdmin.sesion.nombre;
@@ -184,7 +184,7 @@ function mostrarVista(vista) {
   // Renderizar el contenido de la vista
   switch (vista) {
     case "dashboard": renderizarDashboard(); break;
-    case "semanas":   renderizarTablaSemanas(); break;
+    case "semanas": renderizarTablaSemanas(); break;
     // "editor" se renderiza al llamar editarSemana()
   }
 }
@@ -213,15 +213,15 @@ window.mostrarVista = mostrarVista;
  * Calcula y muestra las métricas del panel principal.
  */
 function renderizarDashboard() {
-  const publicadas   = estadoAdmin.semanas.filter(s => s.publicada).length;
+  const publicadas = estadoAdmin.semanas.filter(s => s.publicada).length;
   const conContenido = estadoAdmin.semanas.filter(s => s.titulo !== "").length;
-  const pendientes   = SEMANAS_TOTAL - publicadas;
+  const pendientes = SEMANAS_TOTAL - publicadas;
 
   // Actualizar KPI cards
-  actualizarTexto("kpiPublicadas",   publicadas);
-  actualizarTexto("kpiContenido",    conContenido);
-  actualizarTexto("kpiPendientes",   pendientes);
-  actualizarTexto("kpiTotal",        SEMANAS_TOTAL);
+  actualizarTexto("kpiPublicadas", publicadas);
+  actualizarTexto("kpiContenido", conContenido);
+  actualizarTexto("kpiPendientes", pendientes);
+  actualizarTexto("kpiTotal", SEMANAS_TOTAL);
 
   // Renderizar lista de semanas recientes en el dashboard
   renderizarResumenSemanas();
@@ -254,7 +254,7 @@ function renderizarResumenSemanas() {
     `;
     item.innerHTML = `
       <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.75rem; min-width:26px;">S${String(semana.numero).padStart(2,"0")}</span>
+        <span style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.75rem; min-width:26px;">S${String(semana.numero).padStart(2, "0")}</span>
         <span style="color:var(--text-primary);">${semana.titulo || "Sin título"}</span>
       </div>
       <div style="display:flex; gap:6px; align-items:center;">
@@ -368,10 +368,10 @@ function editarSemana(numero) {
     : `Semana ${numero}`;
 
   // Rellenar el formulario con los datos actuales
-  actualizarValor("editorNumero",      etiqueta);
-  actualizarValor("editorTitulo",      semana.titulo);
+  actualizarValor("editorNumero", etiqueta);
+  actualizarValor("editorTitulo", semana.titulo);
   actualizarValor("editorDescripcion", semana.descripcion);
-  actualizarValor("editorContenido",   semana.contenido);
+  actualizarValor("editorContenido", semana.contenido);
 
   // Mostrar el nombre de la unidad debajo del título del editor
   const subtituloEditor = document.getElementById("editorSubtitulo");
@@ -399,28 +399,28 @@ window.editarSemana = editarSemana;
  * Valida que los campos obligatorios estén completos.
  */
 async function guardarEditor() {
-    const num = estadoAdmin.semanaEditando;
-    const updateData = {
-        titulo: document.getElementById('editorTitulo').value,
-        descripcion: document.getElementById('editorDesc').value,
-        contenido_html: document.getElementById('editorContenido').value,
-        publicado: document.getElementById('editorPublicar').checked,
-        archivos_pdf: estadoAdmin.pdfsEditando,
-        ultima_modificacion: new Date().toISOString()
-    };
+  const num = estadoAdmin.semanaEditando;
+  const updateData = {
+    titulo: document.getElementById('editorTitulo').value,
+    descripcion: document.getElementById('editorDesc').value,
+    contenido_html: document.getElementById('editorContenido').value,
+    publicado: document.getElementById('editorPublicar').checked,
+    archivos_pdf: estadoAdmin.pdfsEditando,
+    ultima_modificacion: new Date().toISOString()
+  };
 
-    const { error } = await window.supabaseClient
-        .from('semanas')
-        .update(updateData)
-        .eq('numero_semana', num);
+  const { error } = await window.supabaseClient
+    .from('semanas')
+    .update(updateData)
+    .eq('numero_semana', num);
 
-    if (error) {
-        mostrarToast("No se pudo guardar en la base de datos", "error");
-    } else {
-        mostrarToast(`¡Semana ${num} actualizada correctamente!`, "success");
-        await cargarSemanas(); // Recargar datos
-        mostrarVista("semanas");
-    }
+  if (error) {
+    mostrarToast("No se pudo guardar en la base de datos", "error");
+  } else {
+    mostrarToast(`¡Semana ${num} actualizada correctamente!`, "success");
+    await cargarSemanas(); // Recargar datos
+    mostrarVista("semanas");
+  }
 }
 
 window.guardarEditor = guardarEditor;
@@ -452,7 +452,7 @@ function togglePublicar(numero) {
     return;
   }
 
-  semana.publicada          = !semana.publicada;
+  semana.publicada = !semana.publicada;
   semana.fechaActualizacion = new Date().toISOString();
 
   guardarSemanas();
@@ -481,10 +481,10 @@ function limpiarSemana(numero) {
   if (indice !== -1) {
     estadoAdmin.semanas[indice] = {
       numero,
-      titulo:             "",
-      descripcion:        "",
-      contenido:          "",
-      publicada:          false,
+      titulo: "",
+      descripcion: "",
+      contenido: "",
+      publicada: false,
       fechaActualizacion: null
     };
 
@@ -521,7 +521,7 @@ function mostrarToast(mensaje, tipo) {
 
   // Icono según el tipo
   const iconos = { success: "✓", error: "✗", info: "ℹ" };
-  const icono  = iconos[tipo] || "•";
+  const icono = iconos[tipo] || "•";
 
   toast.innerHTML = `
     <span style="font-weight:700; font-size:1rem;">${icono}</span>
@@ -703,7 +703,7 @@ window.eliminarPdfAdmin = eliminarPdfAdmin;
  */
 function formatearBytes(bytes) {
   if (!bytes) return "";
-  if (bytes < 1024)       return bytes + " B";
+  if (bytes < 1024) return bytes + " B";
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }

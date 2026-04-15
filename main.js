@@ -7,17 +7,17 @@
    ============================================================ */
 
 /* ── 1. CONSTANTES Y CONFIGURACIÓN ──────────────────────────*/
-const SESSION_KEY    = "upla_session";
-const STORAGE_KEY    = "upla_semanas";    // Clave en localStorage donde vive el contenido
-const SEMANAS_TOTAL  = 16;               // Total de semanas del curso
+const SESSION_KEY = "upla_session";
+const STORAGE_KEY = "upla_semanas";    // Clave en localStorage donde vive el contenido
+const SEMANAS_TOTAL = 16;               // Total de semanas del curso
 
 /* ── 2. ESTADO DE LA APLICACIÓN ──────────────────────────── */
 // Objeto que mantiene el estado actual de la vista
 const estado = {
-  sesion:        null,    // Datos del usuario activo
-  semanas:       [],      // Arreglo de las 16 semanas
-  semanaActiva:  null,    // Semana seleccionada para ver detalle
-  vistaActual:   "grid"  // "grid" | "detalle"
+  sesion: null,    // Datos del usuario activo
+  semanas: [],      // Arreglo de las 16 semanas
+  semanaActiva: null,    // Semana seleccionada para ver detalle
+  vistaActual: "grid"  // "grid" | "detalle"
 };
 
 /* ── 3. INICIALIZACIÓN ────────────────────────────────────── */
@@ -58,19 +58,19 @@ function cargarSesion() {
  * Si no hay datos, genera una estructura vacía de 16 semanas.
  */
 async function cargarSemanas() {
-    const { data, error } = await window.supabaseClient
-        .from('semanas')
-        .select('*')
-        .eq('publicado', true) // Solo lo que el admin aprobó
-        .order('numero_semana', { ascending: true });
+  const { data, error } = await window.supabaseClient
+    .from('semanas')
+    .select('*')
+    .eq('publicado', true) // Solo lo que el admin aprobó
+    .order('numero_semana', { ascending: true });
 
-    if (error) {
-        console.error("Error de conexión");
-        return;
-    }
+  if (error) {
+    console.error("Error de conexión");
+    return;
+  }
 
-    estado.semanas = data;
-    renderizarGrillaSemanas();
+  estado.semanas = data;
+  renderizarGrillaSemanas();
 }
 
 /**
@@ -82,11 +82,11 @@ function generarSemanasVacias() {
   const semanas = [];
   for (let i = 1; i <= SEMANAS_TOTAL; i++) {
     semanas.push({
-      numero:      i,
-      titulo:      "",
+      numero: i,
+      titulo: "",
       descripcion: "",
-      contenido:   "",
-      publicada:   false,        // false = bloqueada para el estudiante
+      contenido: "",
+      publicada: false,        // false = bloqueada para el estudiante
       fechaActualizacion: null
     });
   }
@@ -111,8 +111,8 @@ function renderizarNavbar() {
         <div class="navbar-avatar">${inicial}</div>
         <span>${estado.sesion.nombre}</span>
         ${estado.sesion.rol === "admin"
-          ? `<a href="admin.html" class="btn btn-secondary btn-sm">Panel Admin</a>`
-          : ""}
+        ? `<a href="admin.html" class="btn btn-secondary btn-sm">Panel Admin</a>`
+        : ""}
         <button onclick="cerrarSesion()" class="btn btn-secondary btn-sm">Salir</button>
       </div>
     `;
@@ -134,10 +134,10 @@ function renderizarEstadisticas() {
   const publicadas = estado.semanas.filter(s => s.publicada).length;
 
   const elPublicadas = document.getElementById("statPublicadas");
-  const elTotal      = document.getElementById("statTotal");
+  const elTotal = document.getElementById("statTotal");
 
   if (elPublicadas) elPublicadas.textContent = publicadas;
-  if (elTotal)      elTotal.textContent      = SEMANAS_TOTAL;
+  if (elTotal) elTotal.textContent = SEMANAS_TOTAL;
 }
 
 /* ── 8. RENDERIZADO POR UNIDADES ─────────────────────────── */
@@ -149,28 +149,28 @@ function renderizarEstadisticas() {
  */
 const UNIDADES = [
   {
-    numero:      1,
-    nombre:      "Unidad I",
+    numero: 1,
+    nombre: "Unidad I",
     descripcion: "Fundamentos y Modelo Relacional",
-    semanas:     [1, 2, 3, 4]
+    semanas: [1, 2, 3, 4]
   },
   {
-    numero:      2,
-    nombre:      "Unidad II",
+    numero: 2,
+    nombre: "Unidad II",
     descripcion: "Diseño Avanzado de Bases de Datos",
-    semanas:     [5, 6, 7, 8]
+    semanas: [5, 6, 7, 8]
   },
   {
-    numero:      3,
-    nombre:      "Unidad III",
+    numero: 3,
+    nombre: "Unidad III",
     descripcion: "Programación en Base de Datos",
-    semanas:     [9, 10, 11, 12]
+    semanas: [9, 10, 11, 12]
   },
   {
-    numero:      4,
-    nombre:      "Unidad IV",
+    numero: 4,
+    nombre: "Unidad IV",
     descripcion: "Administración y Seguridad",
-    semanas:     [13, 14, 15, 16]
+    semanas: [13, 14, 15, 16]
   }
 ];
 
@@ -214,7 +214,7 @@ function renderizarGrillaSemanas() {
     grilla.className = "weeks-grid";
 
     unidad.semanas.forEach(function (numSemana) {
-      const semana  = estado.semanas.find(s => s.numero === numSemana);
+      const semana = estado.semanas.find(s => s.numero === numSemana);
       if (!semana) return;
 
       const tarjeta = crearTarjetaSemana(semana);
@@ -249,9 +249,9 @@ function actualizarProgresoUnidad(unidad) {
 
   // Cambiar color del badge según el progreso
   badge.className = "badge";
-  if (publicadasEnUnidad === 0)  badge.classList.add("badge-muted");
+  if (publicadasEnUnidad === 0) badge.classList.add("badge-muted");
   else if (publicadasEnUnidad < 4) badge.classList.add("badge-warning");
-  else                             badge.classList.add("badge-success");
+  else badge.classList.add("badge-success");
 }
 
 /**
@@ -311,13 +311,13 @@ function mostrarDetalleSemana(numero) {
   if (!semana || !semana.publicada) return;
 
   estado.semanaActiva = semana;
-  estado.vistaActual  = "detalle";
+  estado.vistaActual = "detalle";
 
   // Ocultar grilla, mostrar detalle
-  const grilla  = document.getElementById("vistaGrid");
+  const grilla = document.getElementById("vistaGrid");
   const detalle = document.getElementById("vistaDetalle");
 
-  if (grilla)  grilla.classList.add("hidden");
+  if (grilla) grilla.classList.add("hidden");
   if (detalle) {
     detalle.classList.remove("hidden");
     renderizarDetalle(semana);
@@ -332,10 +332,10 @@ function mostrarDetalleSemana(numero) {
  * @param {Object} semana - Datos de la semana
  */
 function renderizarDetalle(semana) {
-  const titulo    = document.getElementById("detalleTitulo");
+  const titulo = document.getElementById("detalleTitulo");
   const subtitulo = document.getElementById("detalleSubtitulo");
   const contenido = document.getElementById("detalleContenido");
-  const fecha     = document.getElementById("detalleFecha");
+  const fecha = document.getElementById("detalleFecha");
 
   // Determinar a qué unidad pertenece esta semana
   const unidad = UNIDADES.find(function (u) {
@@ -343,7 +343,7 @@ function renderizarDetalle(semana) {
   });
   const etiquetaUnidad = unidad ? unidad.nombre + " — " + unidad.descripcion : "";
 
-  if (titulo)    titulo.textContent    = semana.titulo;
+  if (titulo) titulo.textContent = semana.titulo;
   if (subtitulo) subtitulo.textContent =
     `${etiquetaUnidad} · Semana ${semana.numero} · ${semana.descripcion}`;
   if (contenido) contenido.textContent = semana.contenido || "No hay contenido disponible aún.";
@@ -369,7 +369,7 @@ function renderizarDetalle(semana) {
  */
 function renderizarPdfsDetalle(pdfs) {
   const seccion = document.getElementById("detallePdfSection");
-  const lista   = document.getElementById("detallePdfLista");
+  const lista = document.getElementById("detallePdfLista");
   if (!seccion || !lista) return;
 
   // Si no hay PDFs, ocultar la sección completa
@@ -422,10 +422,10 @@ function abrirVisorPdf(indice) {
   const semana = estado.semanaActiva;
   if (!semana || !semana.pdfs || !semana.pdfs[indice]) return;
 
-  const pdf    = semana.pdfs[indice];
-  const frame  = document.getElementById("pdfVisorFrame");
+  const pdf = semana.pdfs[indice];
+  const frame = document.getElementById("pdfVisorFrame");
   const wrapper = document.getElementById("pdfViewerWrapper");
-  const nombre  = document.getElementById("pdfViewerNombre");
+  const nombre = document.getElementById("pdfViewerNombre");
   const descBtn = document.getElementById("pdfDescargarBtn");
 
   if (!frame || !wrapper) return;
@@ -435,7 +435,7 @@ function abrirVisorPdf(indice) {
 
   // Configurar el botón de descarga
   if (descBtn) {
-    descBtn.href     = pdf.base64;
+    descBtn.href = pdf.base64;
     descBtn.download = pdf.nombre;
   }
 
@@ -456,9 +456,9 @@ window.abrirVisorPdf = abrirVisorPdf;
  */
 function cerrarVisorPdf() {
   const wrapper = document.getElementById("pdfViewerWrapper");
-  const frame   = document.getElementById("pdfVisorFrame");
+  const frame = document.getElementById("pdfVisorFrame");
   if (wrapper) wrapper.classList.add("hidden");
-  if (frame)   frame.src = "";
+  if (frame) frame.src = "";
 }
 window.cerrarVisorPdf = cerrarVisorPdf;
 
@@ -477,12 +477,12 @@ function formatearBytesUsuario(bytes) {
 /* ── 11. REGRESAR A GRILLA ───────────────────────────────── */
 function volverAGrilla() {
   estado.semanaActiva = null;
-  estado.vistaActual  = "grid";
+  estado.vistaActual = "grid";
 
-  const grilla  = document.getElementById("vistaGrid");
+  const grilla = document.getElementById("vistaGrid");
   const detalle = document.getElementById("vistaDetalle");
 
-  if (grilla)  grilla.classList.remove("hidden");
+  if (grilla) grilla.classList.remove("hidden");
   if (detalle) detalle.classList.add("hidden");
 
   // Refresca la grilla por si cambió algún dato

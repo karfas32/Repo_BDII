@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <!-- Hoja de estilos externa -->
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
   <!-- ══════════════════════════════════════════════════════
@@ -19,7 +21,7 @@
 
     <div class="navbar-brand">
       <img src="lg_upla.png" alt="Logo UPLA" class="navbar-logo-img"
-           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
       <div class="navbar-logo" style="display:none;">U</div>
       <div class="navbar-title">
         <span class="navbar-title-main">Base de Datos II</span>
@@ -108,7 +110,8 @@
 
     <div class="week-detail active" role="main">
 
-      <div class="week-detail-back" onclick="volverAGrilla()" role="button" tabindex="0" aria-label="Volver al listado de semanas">
+      <div class="week-detail-back" onclick="volverAGrilla()" role="button" tabindex="0"
+        aria-label="Volver al listado de semanas">
         ← Volver al listado
       </div>
 
@@ -134,7 +137,8 @@
               <button onclick="cerrarVisorPdf()" class="btn btn-secondary btn-sm">✕ Cerrar</button>
             </div>
           </div>
-          <iframe id="pdfVisorFrame" class="pdf-visor-frame" title="Visor de PDF" aria-label="Visor de documento PDF"></iframe>
+          <iframe id="pdfVisorFrame" class="pdf-visor-frame" title="Visor de PDF"
+            aria-label="Visor de documento PDF"></iframe>
         </div>
       </div>
 
@@ -155,4 +159,5 @@
   <script src="main.js"></script>
 
 </body>
+
 </html>

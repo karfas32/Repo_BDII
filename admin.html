@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Administración — UPLA</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
   <!-- ══════════════════════════════════════════════════════
@@ -17,7 +19,7 @@
 
     <div class="navbar-brand">
       <img src="lg_upla.png" alt="Logo UPLA" class="navbar-logo-img"
-           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
       <div class="navbar-logo" style="display:none;">U</div>
       <div class="navbar-title">
         <span class="navbar-title-main">Base de Datos II</span>
@@ -50,12 +52,14 @@
     <aside class="admin-sidebar" role="complementary" aria-label="Menú de administración">
 
       <span class="sidebar-section-label">Principal</span>
-      <button class="sidebar-item active" data-vista="dashboard" onclick="mostrarVista('dashboard')" aria-label="Ir al dashboard">
+      <button class="sidebar-item active" data-vista="dashboard" onclick="mostrarVista('dashboard')"
+        aria-label="Ir al dashboard">
         <span class="sidebar-icon">📊</span> Dashboard
       </button>
 
       <span class="sidebar-section-label">Contenido</span>
-      <button class="sidebar-item" data-vista="semanas" onclick="mostrarVista('semanas')" aria-label="Gestionar semanas">
+      <button class="sidebar-item" data-vista="semanas" onclick="mostrarVista('semanas')"
+        aria-label="Gestionar semanas">
         <span class="sidebar-icon">📚</span> Gestionar Semanas
       </button>
 
@@ -123,15 +127,22 @@
         <div class="weeks-table-wrapper" role="region" aria-label="Tabla de gestión de semanas">
           <table class="weeks-table" aria-label="Semanas del curso">
             <thead>
-              <tr><th scope="col">N°</th><th scope="col">Unidad</th><th scope="col">Título</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr>
+              <tr>
+                <th scope="col">N°</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Título</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+              </tr>
             </thead>
             <tbody id="tablaSemanasCuerpo"></tbody>
-           </table>
+          </table>
         </div>
 
         <div class="alert alert-info" style="margin-top:1rem;">
           <span>ℹ</span>
-          <span>Los cambios se reflejan inmediatamente en el portal del estudiante. Solo las semanas <strong>Publicadas</strong> son visibles para los estudiantes.</span>
+          <span>Los cambios se reflejan inmediatamente en el portal del estudiante. Solo las semanas
+            <strong>Publicadas</strong> son visibles para los estudiantes.</span>
         </div>
 
       </div>
@@ -145,7 +156,8 @@
 
           <div class="week-editor-header">
             <h2 class="section-title" id="editorNumero">Editor de Semana</h2>
-            <p id="editorSubtitulo" style="color:var(--text-accent); font-size:0.82rem; font-weight:600; margin-top:2px;"></p>
+            <p id="editorSubtitulo"
+              style="color:var(--text-accent); font-size:0.82rem; font-weight:600; margin-top:2px;"></p>
             <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">
               Completa los campos y guarda el contenido. Al publicar, será visible para los estudiantes.
             </p>
@@ -154,24 +166,30 @@
           <div role="form" aria-label="Formulario de edición de semana">
 
             <div class="form-group">
-              <label for="editorTitulo" class="form-label">Título de la semana <span style="color:var(--error);">*</span></label>
-              <input type="text" id="editorTitulo" class="form-input" placeholder="Ej: Introducción al Diseño Web" maxlength="120" required aria-required="true">
+              <label for="editorTitulo" class="form-label">Título de la semana <span
+                  style="color:var(--error);">*</span></label>
+              <input type="text" id="editorTitulo" class="form-input" placeholder="Ej: Introducción al Diseño Web"
+                maxlength="120" required aria-required="true">
             </div>
 
             <div class="form-group">
               <label for="editorDescripcion" class="form-label">Descripción breve</label>
-              <input type="text" id="editorDescripcion" class="form-input" placeholder="Resumen de una línea sobre el tema de la semana" maxlength="200">
+              <input type="text" id="editorDescripcion" class="form-input"
+                placeholder="Resumen de una línea sobre el tema de la semana" maxlength="200">
             </div>
 
             <div class="form-group">
               <label for="editorContenido" class="form-label">Contenido académico</label>
-              <textarea id="editorContenido" class="form-textarea" placeholder="Escribe aquí el contenido completo de la semana: objetivos, temas, actividades, recursos, etc." style="min-height: 220px;"></textarea>
+              <textarea id="editorContenido" class="form-textarea"
+                placeholder="Escribe aquí el contenido completo de la semana: objetivos, temas, actividades, recursos, etc."
+                style="min-height: 220px;"></textarea>
             </div>
 
             <div class="form-group">
               <label class="form-label">📄 Archivos PDF adjuntos</label>
 
-              <div id="pdfDropZone" class="pdf-dropzone" onclick="document.getElementById('inputPdf').click()" role="button" tabindex="0" aria-label="Zona para subir archivos PDF">
+              <div id="pdfDropZone" class="pdf-dropzone" onclick="document.getElementById('inputPdf').click()"
+                role="button" tabindex="0" aria-label="Zona para subir archivos PDF">
                 <div class="pdf-dropzone-icon">📂</div>
                 <div class="pdf-dropzone-text">Haz clic o arrastra un PDF aquí</div>
                 <div class="pdf-dropzone-hint">Solo archivos .pdf · Máx. 5 MB por archivo</div>
@@ -184,13 +202,18 @@
             </div>
 
             <div class="form-group" style="display:flex; align-items:center; gap:10px;">
-              <input type="checkbox" id="editorPublicar" style="width: 18px; height: 18px; accent-color: var(--upla-blue-light); cursor: pointer;">
-              <label for="editorPublicar" style="cursor:pointer; color:var(--text-secondary); font-size:0.9rem;">Publicar esta semana (visible para estudiantes)</label>
+              <input type="checkbox" id="editorPublicar"
+                style="width: 18px; height: 18px; accent-color: var(--upla-blue-light); cursor: pointer;">
+              <label for="editorPublicar"
+                style="cursor:pointer; color:var(--text-secondary); font-size:0.9rem;">Publicar esta semana (visible
+                para estudiantes)</label>
             </div>
 
             <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:1.5rem;">
-              <button type="button" onclick="guardarEditor()" class="btn btn-primary" aria-label="Guardar cambios de la semana">💾 Guardar Cambios</button>
-              <button type="button" onclick="cancelarEditor()" class="btn btn-secondary" aria-label="Cancelar y volver a la lista">✕ Cancelar</button>
+              <button type="button" onclick="guardarEditor()" class="btn btn-primary"
+                aria-label="Guardar cambios de la semana">💾 Guardar Cambios</button>
+              <button type="button" onclick="cancelarEditor()" class="btn btn-secondary"
+                aria-label="Cancelar y volver a la lista">✕ Cancelar</button>
             </div>
 
           </div>
@@ -215,4 +238,5 @@
   <script src="admin.js"></script>
 
 </body>
+
 </html>
