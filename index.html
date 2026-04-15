@@ -4,33 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal Académico — UPLA</title>
-  <!-- Hoja de estilos externa (sin CSS embebido) -->
+  <!-- Hoja de estilos externa -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="supabase-config.js"></script>
-
-<script src="admin.js"></script>
-<script src="tema.js"></script>
 
   <!-- ══════════════════════════════════════════════════════
        PORTAL DEL ESTUDIANTE (index.html)
        Vista principal con las 16 semanas del curso.
-       Accesible para cualquier visitante, con más opciones
-       si el usuario ha iniciado sesión.
   ══════════════════════════════════════════════════════ -->
 
   <!-- ── BARRA DE NAVEGACIÓN ─────────────────────────────── -->
   <nav class="navbar" role="navigation" aria-label="Navegación principal">
 
-    <!-- Marca / Logo UPLA -->
     <div class="navbar-brand">
-      <!-- Logo institucional: coloca el archivo lg_upla.img en la raíz del proyecto -->
       <img src="lg_upla.png" alt="Logo UPLA" class="navbar-logo-img"
            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <!-- Fallback: se muestra si la imagen no carga -->
       <div class="navbar-logo" style="display:none;">U</div>
       <div class="navbar-title">
         <span class="navbar-title-main">Base de Datos II</span>
@@ -38,25 +27,16 @@
       </div>
     </div>
 
-    <!-- Links de navegación -->
     <div class="navbar-nav">
       <a href="index.html" class="nav-link active">Inicio</a>
       <a href="#unidades" class="nav-link">Unidades</a>
       <a href="login.html" class="nav-link">Mi Cuenta</a>
     </div>
 
-    <!-- Controles derechos: tema + usuario -->
     <div style="display:flex; align-items:center; gap:10px;">
-      <!-- Botón cambio de tema: llama toggleTema() en main.js -->
-      <button
-        id="btnTema"
-        class="btn-tema"
-        onclick="toggleTema()"
-        aria-label="Cambiar tema claro u oscuro"
-        title="Cambiar tema"
-      ><span id="iconTema">☀️</span></button>
-
-      <!-- Área de usuario (llenada por main.js) -->
+      <button id="btnTema" class="btn-tema" onclick="toggleTema()" aria-label="Cambiar tema" title="Cambiar tema">
+        <span id="iconTema">☀️</span>
+      </button>
       <div id="navUser"></div>
     </div>
 
@@ -64,88 +44,53 @@
 
   <!-- ══════════════════════════════════════════════════════
        VISTA: GRILLA DE SEMANAS
-       Visible por defecto. Se oculta cuando el usuario
-       abre el detalle de una semana.
   ══════════════════════════════════════════════════════ -->
   <div id="vistaGrid">
 
-    <!-- Hero / Banner principal -->
     <section class="hero" aria-labelledby="heroTitulo">
-
       <p class="hero-eyebrow">Ingeniería de Sistemas · UPLA</p>
-
-      <h1 class="hero-title" id="heroTitulo">
-        Base de Datos II
-      </h1>
-
+      <h1 class="hero-title" id="heroTitulo">Base de Datos II</h1>
       <p class="hero-subtitle">
         Contenido académico organizado en <strong>4 unidades</strong> con 4 semanas cada una.
         El material se publica progresivamente a lo largo del ciclo académico.
       </p>
-
       <div class="hero-actions">
-        <a href="#unidades" class="btn btn-primary btn-lg">
-          Ver Unidades ↓
-        </a>
-        <a href="login.html" class="btn btn-secondary btn-lg">
-          Iniciar Sesión
-        </a>
+        <a href="#unidades" class="btn btn-primary btn-lg">Ver Unidades ↓</a>
+        <a href="login.html" class="btn btn-secondary btn-lg">Iniciar Sesión</a>
       </div>
-
     </section>
 
-    <!-- Métricas del curso -->
     <section class="stats-row" aria-label="Estadísticas del curso">
-
       <div class="stat-item">
         <div class="stat-value">4</div>
         <div class="stat-label">Unidades</div>
       </div>
-
       <div class="stat-item">
         <div class="stat-value" id="statPublicadas">0</div>
         <div class="stat-label">Semanas publicadas</div>
       </div>
-
       <div class="stat-item">
         <div class="stat-value" id="statTotal">16</div>
         <div class="stat-label">Semanas totales</div>
       </div>
-
       <div class="stat-item">
         <div class="stat-value">2024</div>
         <div class="stat-label">Año académico</div>
       </div>
-
     </section>
 
-    <!-- Separador visual -->
     <div style="max-width:1200px; margin:0 auto; padding:0 2rem;">
       <div class="divider"></div>
     </div>
 
-    <!-- ── SECCIÓN DE UNIDADES Y SEMANAS ─────────────────────── -->
     <section class="weeks-section" id="unidades" aria-labelledby="tituloUnidades">
-
       <div class="section-header">
-        <h2 class="section-title" id="tituloUnidades">
-          Unidades del Curso
-        </h2>
+        <h2 class="section-title" id="tituloUnidades">Unidades del Curso</h2>
         <span class="badge badge-blue">Ciclo 2024 - I</span>
       </div>
-
-      <!--
-        Contenedor de las 4 unidades.
-        main.js renderiza cada unidad como un bloque con su encabezado
-        y la grilla de 4 semanas correspondiente.
-      -->
-      <div id="semanasGrid" role="list" aria-label="Unidades y semanas del curso">
-        <!-- Las unidades y tarjetas se insertan dinámicamente desde main.js -->
-      </div>
-
+      <div id="semanasGrid" role="list" aria-label="Unidades y semanas del curso"></div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer" role="contentinfo">
       <span>© 2024 Universidad Peruana Los Andes</span> — Portal Académico
       <br>
@@ -155,57 +100,32 @@
     </footer>
 
   </div>
-  <!-- fin #vistaGrid -->
-
 
   <!-- ══════════════════════════════════════════════════════
        VISTA: DETALLE DE SEMANA
-       Oculto por defecto. Se muestra cuando el usuario
-       hace clic en una tarjeta de semana publicada.
   ══════════════════════════════════════════════════════ -->
   <div id="vistaDetalle" class="hidden">
 
     <div class="week-detail active" role="main">
 
-      <!-- Botón volver -->
-      <!-- onclick llama a volverAGrilla() definida en main.js -->
-      <div
-        class="week-detail-back"
-        onclick="volverAGrilla()"
-        role="button"
-        tabindex="0"
-        aria-label="Volver al listado de semanas"
-      >
+      <div class="week-detail-back" onclick="volverAGrilla()" role="button" tabindex="0" aria-label="Volver al listado de semanas">
         ← Volver al listado
       </div>
 
-      <!-- Encabezado del detalle -->
       <div class="week-detail-header">
         <h1 class="week-detail-title" id="detalleTitulo">Título de la semana</h1>
         <p class="week-detail-meta" id="detalleSubtitulo"></p>
         <p class="week-detail-meta" id="detalleFecha" style="margin-top:4px;"></p>
       </div>
 
-      <!-- Contenido académico -->
-      <div class="week-detail-content" id="detalleContenido" aria-live="polite">
-        <!-- El contenido se inserta desde main.js -->
-      </div>
+      <div class="week-detail-content" id="detalleContenido" aria-live="polite"></div>
 
-      <!-- ── Sección de archivos PDF adjuntos ──────────────── -->
-      <!-- Se muestra/oculta desde main.js según haya PDFs guardados -->
       <div id="detallePdfSection" class="pdf-section hidden" aria-label="Archivos PDF adjuntos">
-
         <div class="pdf-section-header">
           <span class="pdf-section-icon">📄</span>
           <h3 class="pdf-section-title">Material en PDF</h3>
         </div>
-
-        <!-- Lista de PDFs (generada por main.js) -->
-        <div id="detallePdfLista" class="pdf-lista">
-          <!-- Cada ítem PDF se inserta dinámicamente -->
-        </div>
-
-        <!-- Visor embebido de PDF (se activa al hacer clic en "Ver") -->
+        <div id="detallePdfLista" class="pdf-lista"></div>
         <div id="pdfViewerWrapper" class="pdf-viewer-wrapper hidden">
           <div class="pdf-viewer-toolbar">
             <span id="pdfViewerNombre" class="pdf-viewer-nombre"></span>
@@ -214,34 +134,25 @@
               <button onclick="cerrarVisorPdf()" class="btn btn-secondary btn-sm">✕ Cerrar</button>
             </div>
           </div>
-          <!-- El iframe muestra el PDF en línea -->
-          <iframe
-            id="pdfVisorFrame"
-            class="pdf-visor-frame"
-            title="Visor de PDF"
-            aria-label="Visor de documento PDF"
-          ></iframe>
+          <iframe id="pdfVisorFrame" class="pdf-visor-frame" title="Visor de PDF" aria-label="Visor de documento PDF"></iframe>
         </div>
-
       </div>
 
-      <!-- Navegación al pie del detalle -->
       <div style="display:flex; justify-content:flex-end; margin-top:2rem;">
-        <button
-          onclick="volverAGrilla()"
-          class="btn btn-secondary"
-        >← Regresar a las semanas</button>
+        <button onclick="volverAGrilla()" class="btn btn-secondary">← Regresar a las semanas</button>
       </div>
 
     </div>
 
   </div>
-  <!-- fin #vistaDetalle -->
 
-
-  <!-- Script principal del portal (archivo externo) -->
-  <script src="main.js"></script>
-  <!-- Script de tema compartido -->
+  <!-- ══════════════════════════════════════════════════════
+       SCRIPTS (cargados una sola vez)
+  ══════════════════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="tema.js"></script>
+  <script src="main.js"></script>
+
 </body>
 </html>
