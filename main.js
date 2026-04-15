@@ -57,17 +57,20 @@ function cargarSesion() {
  * Lee las semanas desde localStorage (donde el admin las guarda).
  * Si no hay datos, genera una estructura vacía de 16 semanas.
  */
-function cargarSemanas() {
-  const guardado = localStorage.getItem(STORAGE_KEY);
+async function cargarSemanas() {
+    const { data, error } = await window.supabaseClient
+        .from('semanas')
+        .select('*')
+        .eq('publicado', true) // Solo lo que el admin aprobó
+        .order('numero_semana', { ascending: true });
 
-  if (guardado) {
-    // Datos existentes: parsear y usar
-    estado.semanas = JSON.parse(guardado);
-  } else {
-    // Primera vez: inicializar 16 semanas vacías
-    estado.semanas = generarSemanasVacias();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(estado.semanas));
-  }
+    if (error) {
+        console.error("Error de conexión");
+        return;
+    }
+
+    estado.semanas = data;
+    renderizarGrillaSemanas();
 }
 
 /**

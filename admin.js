@@ -95,16 +95,20 @@ function obtenerUnidadDeSemana(numero) {
  * Lee las semanas desde localStorage.
  * Las mismas que verá el estudiante en index.html.
  */
-function cargarSemanas() {
-  const guardado = localStorage.getItem(STORAGE_KEY);
+async function cargarSemanas() {
+    const { data, error } = await window.supabaseClient
+        .from('semanas')
+        .select('*')
+        .order('numero_semana', { ascending: true });
 
-  if (guardado) {
-    estadoAdmin.semanas = JSON.parse(guardado);
-  } else {
-    // Primera vez: crear estructura vacía de 16 semanas
-    estadoAdmin.semanas = crearSemanasIniciales();
-    guardarSemanas();
-  }
+    if (error) {
+        mostrarToast("Error al conectar con Supabase", "error");
+        console.error(error);
+        return;
+    }
+    
+    estadoAdmin.semanas = data;
+    renderizarListaSemanas(); // Esta función se encarga de dibujar la tabla
 }
 
 /**
@@ -394,49 +398,29 @@ window.editarSemana = editarSemana;
  * Lee los datos del formulario editor y los guarda en localStorage.
  * Valida que los campos obligatorios estén completos.
  */
-function guardarEditor() {
-  if (!estadoAdmin.semanaEditando) return;
-
-  // Obtener valores del formulario
-  const titulo      = document.getElementById("editorTitulo")?.value.trim();
-  const descripcion = document.getElementById("editorDescripcion")?.value.trim();
-  const contenido   = document.getElementById("editorContenido")?.value.trim();
-  const publicar    = document.getElementById("editorPublicar")?.checked;
-
-  // Validación básica
-  if (!titulo) {
-    mostrarToast("El título es obligatorio.", "error");
-    document.getElementById("editorTitulo")?.focus();
-    return;
-  }
-
-  // Encontrar la semana y actualizar sus datos
-  const indice = estadoAdmin.semanas.findIndex(
-    s => s.numero === estadoAdmin.semanaEditando
-  );
-
-  if (indice !== -1) {
-    estadoAdmin.semanas[indice] = {
-      ...estadoAdmin.semanas[indice],
-      titulo,
-      descripcion,
-      contenido,
-      // pdfs: se toma del estado temporal del editor (ya gestionado por las funciones PDF)
-      pdfs: estadoAdmin.pdfsEditando || estadoAdmin.semanas[indice].pdfs || [],
-      publicada:          publicar,
-      fechaActualizacion: new Date().toISOString()
+async function guardarEditor() {
+    const num = estadoAdmin.semanaEditando;
+    const updateData = {
+        titulo: document.getElementById('editorTitulo').value,
+        descripcion: document.getElementById('editorDesc').value,
+        contenido_html: document.getElementById('editorContenido').value,
+        publicado: document.getElementById('editorPublicar').checked,
+        archivos_pdf: estadoAdmin.pdfsEditando,
+        ultima_modificacion: new Date().toISOString()
     };
 
-    // Persistir en localStorage (visible para el estudiante inmediatamente)
-    guardarSemanas();
+    const { error } = await window.supabaseClient
+        .from('semanas')
+        .update(updateData)
+        .eq('numero_semana', num);
 
-    mostrarToast(`Semana ${estadoAdmin.semanaEditando} guardada exitosamente. ✓`, "success");
-
-    // Volver a la tabla de semanas
-    setTimeout(function () {
-      mostrarVista("semanas");
-    }, 1200);
-  }
+    if (error) {
+        mostrarToast("No se pudo guardar en la base de datos", "error");
+    } else {
+        mostrarToast(`¡Semana ${num} actualizada correctamente!`, "success");
+        await cargarSemanas(); // Recargar datos
+        mostrarVista("semanas");
+    }
 }
 
 window.guardarEditor = guardarEditor;
