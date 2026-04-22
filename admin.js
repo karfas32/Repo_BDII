@@ -4,12 +4,17 @@
    Descripción: Panel de administración con Supabase
    ============================================================ */
 const SESSION_KEY = "upla_session";
-const UNIDADES = [
-  { numero: 1, nombre: "Unidad I", descripcion: "Fundamentos y Modelo Relacional", semanas: [1, 2, 3, 4] },
-  { numero: 2, nombre: "Unidad II", descripcion: "Diseño Avanzado de Bases de Datos", semanas: [5, 6, 7, 8] },
-  { numero: 3, nombre: "Unidad III", descripcion: "Programación en Base de Datos", semanas: [9, 10, 11, 12] },
-  { numero: 4, nombre: "Unidad IV", descripcion: "Administración y Seguridad", semanas: [13, 14, 15, 16] }
+
+// ── Valores por defecto de las unidades ──────────────────────
+const UNIDADES_DEFAULT = [
+  { numero: 1, nombre: "Unidad I",   descripcion: "Fundamentos y Modelo Relacional",      semanas: [1,2,3,4]    },
+  { numero: 2, nombre: "Unidad II",  descripcion: "Diseño Avanzado de Bases de Datos",     semanas: [5,6,7,8]    },
+  { numero: 3, nombre: "Unidad III", descripcion: "Programación en Base de Datos",         semanas: [9,10,11,12] },
+  { numero: 4, nombre: "Unidad IV",  descripcion: "Administración y Seguridad",            semanas: [13,14,15,16] }
 ];
+
+// UNIDADES se carga dinámicamente desde Supabase/localStorage
+let UNIDADES = UNIDADES_DEFAULT.map(u => ({ ...u }));
 
 const estadoAdmin = {
   sesion: null,
@@ -25,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function inicializarAdmin() {
   if (!verificarAccesoAdmin()) return;
+  await cargarUnidades();
   await cargarSemanas();
   renderizarInfoAdmin();
   mostrarVista("dashboard");
@@ -114,7 +120,7 @@ function renderizarInfoAdmin() {
 function mostrarVista(vista) {
   estadoAdmin.vistaActual = vista;
 
-  const vistas = ["vistaDashboard", "vistaSemanas", "vistaEditor"];
+  const vistas = ["vistaDashboard", "vistaSemanas", "vistaEditor", "vistaUnidades"];
   vistas.forEach(function (id) {
     const el = document.getElementById(id);
     if (el) el.classList.add("hidden");
@@ -126,7 +132,8 @@ function mostrarVista(vista) {
   actualizarSidebar(vista);
 
   if (vista === "dashboard") renderizarDashboard();
-  if (vista === "semanas") renderizarTablaSemanas();
+  if (vista === "semanas")   renderizarTablaSemanas();
+  if (vista === "unidades")  renderizarEditorUnidades();
 }
 
 function actualizarSidebar(vista) {
@@ -404,19 +411,64 @@ async function limpiarSemana(numero) {
 }
 
 // ============================================================
-// FUNCIONES PARA MANEJO DE PDFs
+// FUNCIONES PARA MANEJO DE ARCHIVOS (multi-tipo)
 // ============================================================
+
+// Mapa de extensiones → { icono, tipo, categoria }
+const TIPOS_ARCHIVO = {
+  pdf:  { icono: "📄", etiqueta: "PDF",        categoria: "pdf",    visor: "iframe" },
+  doc:  { icono: "📝", etiqueta: "Word",        categoria: "docx",   visor: "descarga" },
+  docx: { icono: "📝", etiqueta: "Word",        categoria: "docx",   visor: "office365" },
+  ppt:  { icono: "📊", etiqueta: "PowerPoint",  categoria: "pptx",   visor: "descarga" },
+  pptx: { icono: "📊", etiqueta: "PowerPoint",  categoria: "pptx",   visor: "office365" },
+  xls:  { icono: "📋", etiqueta: "Excel",       categoria: "otro",   visor: "descarga" },
+  xlsx: { icono: "📋", etiqueta: "Excel",       categoria: "otro",   visor: "office365" },
+  png:  { icono: "🖼️", etiqueta: "Imagen",      categoria: "imagen", visor: "imagen" },
+  jpg:  { icono: "🖼️", etiqueta: "Imagen",      categoria: "imagen", visor: "imagen" },
+  jpeg: { icono: "🖼️", etiqueta: "Imagen",      categoria: "imagen", visor: "imagen" },
+  gif:  { icono: "🖼️", etiqueta: "GIF",         categoria: "imagen", visor: "imagen" },
+  webp: { icono: "🖼️", etiqueta: "Imagen",      categoria: "imagen", visor: "imagen" },
+  mp4:  { icono: "🎬", etiqueta: "Video",       categoria: "otro",   visor: "video" },
+  mp3:  { icono: "🎵", etiqueta: "Audio",       categoria: "otro",   visor: "audio" },
+  txt:  { icono: "📃", etiqueta: "Texto",       categoria: "otro",   visor: "iframe" },
+  zip:  { icono: "📦", etiqueta: "ZIP",         categoria: "otro",   visor: "descarga" },
+  rar:  { icono: "📦", etiqueta: "RAR",         categoria: "otro",   visor: "descarga" },
+};
+
+function obtenerInfoTipo(nombre) {
+  const ext = nombre.split(".").pop().toLowerCase();
+  return TIPOS_ARCHIVO[ext] || { icono: "📎", etiqueta: ext.toUpperCase(), categoria: "otro", visor: "descarga" };
+}
+
+// Filtro activo en el editor admin
+let filtroTipoAdmin = "todos";
+
+function filtrarTipoAdmin(tipo) {
+  filtroTipoAdmin = tipo;
+  document.querySelectorAll(".file-type-btn").forEach(function(btn) {
+    btn.classList.toggle("active", btn.dataset.tipo === tipo);
+  });
+  renderizarListaPdfAdmin();
+}
+
 function inicializarEditorPdf(semana) {
-  // Cargar PDFs existentes
   estadoAdmin.pdfsEditando = semana.archivos_pdf ? [...semana.archivos_pdf] : [];
+  filtroTipoAdmin = "todos";
+  // Reset filtro UI
+  document.querySelectorAll(".file-type-btn").forEach(function(btn) {
+    btn.classList.toggle("active", btn.dataset.tipo === "todos");
+  });
   renderizarListaPdfAdmin();
 
-  // Configurar input file
-  const inputPdf = document.getElementById("inputPdf");
-  if (inputPdf) {
-    const nuevoInput = inputPdf.cloneNode(true);
-    inputPdf.parentNode.replaceChild(nuevoInput, inputPdf);
-    nuevoInput.addEventListener("change", manejarSeleccionPdf);
+  // Configurar input file (multi-tipo)
+  const inputArchivos = document.getElementById("inputArchivos");
+  if (inputArchivos) {
+    const nuevoInput = inputArchivos.cloneNode(true);
+    inputArchivos.parentNode.replaceChild(nuevoInput, inputArchivos);
+    nuevoInput.addEventListener("change", function(e) {
+      procesarArchivos(e.target.files);
+      e.target.value = "";
+    });
   }
 
   // Configurar drop zone
@@ -432,50 +484,40 @@ function inicializarEditorPdf(semana) {
     dropZone.ondrop = function (e) {
       e.preventDefault();
       dropZone.classList.remove("pdf-dropzone-activa");
-      procesarArchivosPdf(e.dataTransfer.files);
+      procesarArchivos(e.dataTransfer.files);
     };
   }
 }
 
-function manejarSeleccionPdf(e) {
-  procesarArchivosPdf(e.target.files);
-  e.target.value = "";
-}
-
-function procesarArchivosPdf(archivos) {
+function procesarArchivos(archivos) {
   if (!archivos || archivos.length === 0) return;
 
+  const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+
   Array.from(archivos).forEach(function (archivo) {
-    // Validar tipo
-    if (archivo.type !== "application/pdf" && !archivo.name.endsWith(".pdf")) {
-      mostrarToast(`"${archivo.name}" no es un PDF válido.`, "error");
-      return;
-    }
-
-    // Validar tamaño (5 MB)
-    const MAX_BYTES = 5 * 1024 * 1024;
     if (archivo.size > MAX_BYTES) {
-      mostrarToast(`"${archivo.name}" supera el límite de 5 MB.`, "error");
+      mostrarToast(`"${archivo.name}" supera el límite de 10 MB.`, "error");
       return;
     }
-
-    // Verificar duplicados
     const yaExiste = estadoAdmin.pdfsEditando.some(p => p.nombre === archivo.name);
     if (yaExiste) {
       mostrarToast(`"${archivo.name}" ya está adjunto.`, "info");
       return;
     }
-
-    // Leer y convertir a base64
+    const info = obtenerInfoTipo(archivo.name);
     const lector = new FileReader();
     lector.onload = function (ev) {
       estadoAdmin.pdfsEditando.push({
-        nombre: archivo.name,
-        tamaño: archivo.size,
-        base64: ev.target.result
+        nombre:    archivo.name,
+        tamaño:    archivo.size,
+        base64:    ev.target.result,
+        categoria: info.categoria,
+        visor:     info.visor,
+        etiqueta:  info.etiqueta,
+        icono:     info.icono
       });
       renderizarListaPdfAdmin();
-      mostrarToast(`"${archivo.name}" adjuntado correctamente. ✓`, "success");
+      mostrarToast(`"${archivo.name}" adjuntado ✓`, "success");
     };
     lector.onerror = function () {
       mostrarToast(`Error al leer "${archivo.name}".`, "error");
@@ -487,30 +529,48 @@ function procesarArchivosPdf(archivos) {
 function renderizarListaPdfAdmin() {
   const lista = document.getElementById("pdfListaAdmin");
   if (!lista) return;
-
   lista.innerHTML = "";
 
+  const filtrados = filtroTipoAdmin === "todos"
+    ? estadoAdmin.pdfsEditando
+    : estadoAdmin.pdfsEditando.filter(function(a) { return a.categoria === filtroTipoAdmin; });
+
   if (estadoAdmin.pdfsEditando.length === 0) {
-    lista.innerHTML = `
-      <p style="color:var(--text-muted); font-size:0.82rem; font-style:italic; margin-top:8px;">
-        No hay PDFs adjuntos todavía.
-      </p>`;
+    lista.innerHTML = `<p style="color:var(--text-muted); font-size:0.82rem; font-style:italic; margin-top:8px;">No hay archivos adjuntos todavía.</p>`;
     return;
   }
 
-  estadoAdmin.pdfsEditando.forEach(function (pdf, indice) {
+  if (filtrados.length === 0) {
+    lista.innerHTML = `<p style="color:var(--text-muted); font-size:0.82rem; font-style:italic; margin-top:8px;">No hay archivos de este tipo.</p>`;
+    return;
+  }
+
+  filtrados.forEach(function (archivo) {
+    const indiceReal = estadoAdmin.pdfsEditando.indexOf(archivo);
+    const info = obtenerInfoTipo(archivo.nombre);
     const item = document.createElement("div");
     item.className = "pdf-item-admin";
     item.innerHTML = `
       <div class="pdf-item-info">
-        <span class="pdf-item-icono">📄</span>
-        <span class="pdf-item-nombre">${escapeHtml(pdf.nombre)}</span>
-        <span class="pdf-item-tamaño">${formatearBytes(pdf.tamaño)}</span>
+        <span class="pdf-item-icono">${info.icono}</span>
+        <div>
+          <span class="pdf-item-nombre">${escapeHtml(archivo.nombre)}</span>
+          <div style="display:flex; gap:6px; margin-top:3px;">
+            <span class="file-badge file-badge-${info.categoria}">${info.etiqueta}</span>
+            <span class="pdf-item-tamaño">${formatearBytes(archivo.tamaño)}</span>
+          </div>
+        </div>
       </div>
-      <button type="button" onclick="eliminarPdfAdmin(${indice})" class="btn btn-danger btn-sm" title="Eliminar este PDF">🗑️ Quitar</button>
+      <button type="button" onclick="eliminarPdfAdmin(${indiceReal})" class="btn btn-danger btn-sm" title="Eliminar">🗑️ Quitar</button>
     `;
     lista.appendChild(item);
   });
+
+  // Contador
+  const contadorEl = document.createElement("p");
+  contadorEl.style.cssText = "font-size:0.75rem; color:var(--text-muted); margin-top:6px; text-align:right;";
+  contadorEl.textContent = `${estadoAdmin.pdfsEditando.length} archivo(s) adjunto(s)`;
+  lista.appendChild(contadorEl);
 }
 
 function eliminarPdfAdmin(indice) {
@@ -519,6 +579,162 @@ function eliminarPdfAdmin(indice) {
   renderizarListaPdfAdmin();
   mostrarToast(`"${nombre}" eliminado de la lista.`, "info");
 }
+
+window.filtrarTipoAdmin = filtrarTipoAdmin;
+
+// ============================================================
+// GESTIÓN DE UNIDADES (nombres y descripciones editables)
+// ============================================================
+const UNIDADES_STORAGE_KEY = "upla_unidades";
+
+async function cargarUnidades() {
+  // 1. Intentar cargar desde Supabase
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('unidades')
+      .select('*')
+      .order('numero', { ascending: true });
+
+    if (!error && data && data.length === 4) {
+      data.forEach(function(u) {
+        const idx = UNIDADES.findIndex(function(x) { return x.numero === u.numero; });
+        if (idx !== -1) {
+          UNIDADES[idx].nombre      = u.nombre      || UNIDADES[idx].nombre;
+          UNIDADES[idx].descripcion = u.descripcion || UNIDADES[idx].descripcion;
+        }
+      });
+      // Sincronizar localStorage
+      localStorage.setItem(UNIDADES_STORAGE_KEY, JSON.stringify(UNIDADES));
+      return;
+    }
+  } catch (_) { /* sin tabla unidades — usar fallback */ }
+
+  // 2. Fallback: localStorage
+  const guardadas = localStorage.getItem(UNIDADES_STORAGE_KEY);
+  if (guardadas) {
+    try {
+      const arr = JSON.parse(guardadas);
+      arr.forEach(function(u) {
+        const idx = UNIDADES.findIndex(function(x) { return x.numero === u.numero; });
+        if (idx !== -1) {
+          UNIDADES[idx].nombre      = u.nombre      || UNIDADES[idx].nombre;
+          UNIDADES[idx].descripcion = u.descripcion || UNIDADES[idx].descripcion;
+        }
+      });
+    } catch (_) { /* usar defaults */ }
+  }
+}
+
+function renderizarEditorUnidades() {
+  const grid = document.getElementById("unidadesEditorGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  UNIDADES.forEach(function(unidad) {
+    const card = document.createElement("div");
+    card.className = "unidad-edit-card";
+    card.innerHTML = `
+      <div class="unidad-edit-header">
+        <span class="unidad-edit-num">Unidad ${unidad.numero}</span>
+        <span class="unidad-edit-semanas">Semanas ${unidad.semanas[0]}–${unidad.semanas[unidad.semanas.length - 1]}</span>
+      </div>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label class="form-label" for="unidadNombre${unidad.numero}">Nombre</label>
+        <input type="text" id="unidadNombre${unidad.numero}" class="form-input"
+          value="${escapeHtml(unidad.nombre)}" maxlength="60"
+          placeholder="Ej: Unidad I — Introducción">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="unidadDesc${unidad.numero}">Descripción</label>
+        <input type="text" id="unidadDesc${unidad.numero}" class="form-input"
+          value="${escapeHtml(unidad.descripcion)}" maxlength="120"
+          placeholder="Breve descripción de los temas cubiertos">
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Ocultar alerta previa
+  const alerta = document.getElementById("unidadesAlerta");
+  if (alerta) alerta.classList.add("hidden");
+}
+
+async function guardarUnidades() {
+  // Leer valores del formulario
+  let valido = true;
+  const nuevasUnidades = UNIDADES.map(function(unidad) {
+    const nombre      = (document.getElementById("unidadNombre" + unidad.numero)?.value || "").trim();
+    const descripcion = (document.getElementById("unidadDesc"   + unidad.numero)?.value || "").trim();
+    if (!nombre) { valido = false; }
+    return { ...unidad, nombre, descripcion };
+  });
+
+  if (!valido) {
+    mostrarAlertaUnidades("El nombre de cada unidad es obligatorio.", "error");
+    return;
+  }
+
+  // Actualizar array en memoria
+  nuevasUnidades.forEach(function(u, i) {
+    UNIDADES[i].nombre      = u.nombre;
+    UNIDADES[i].descripcion = u.descripcion;
+  });
+
+  // Persistir en localStorage (siempre)
+  localStorage.setItem(UNIDADES_STORAGE_KEY, JSON.stringify(UNIDADES));
+
+  // Intentar persistir en Supabase
+  let guardadoEnBD = false;
+  try {
+    for (const u of UNIDADES) {
+      const { error } = await window.supabaseClient
+        .from('unidades')
+        .upsert({ numero: u.numero, nombre: u.nombre, descripcion: u.descripcion },
+                 { onConflict: 'numero' });
+      if (error) throw error;
+    }
+    guardadoEnBD = true;
+  } catch (_) { /* tabla no existe — solo localStorage */ }
+
+  mostrarToast("✅ Unidades guardadas correctamente.", "success");
+  mostrarAlertaUnidades(
+    guardadoEnBD
+      ? "✅ Cambios guardados en la base de datos y en este navegador."
+      : "✅ Cambios guardados localmente. (Crea la tabla 'unidades' en Supabase para persistencia total.)",
+    "success"
+  );
+
+  // Refrescar tabla y dashboard para reflejar nuevos nombres
+  renderizarTablaSemanas();
+  renderizarDashboard();
+}
+
+function restablecerUnidades() {
+  if (!confirm("¿Restablecer los nombres y descripciones originales de las 4 unidades?")) return;
+  UNIDADES_DEFAULT.forEach(function(def, i) {
+    UNIDADES[i].nombre      = def.nombre;
+    UNIDADES[i].descripcion = def.descripcion;
+  });
+  localStorage.removeItem(UNIDADES_STORAGE_KEY);
+  renderizarEditorUnidades();
+  mostrarToast("Unidades restablecidas a los valores por defecto.", "info");
+}
+
+function mostrarAlertaUnidades(mensaje, tipo) {
+  const alerta = document.getElementById("unidadesAlerta");
+  if (!alerta) return;
+  alerta.className = "alert alert-" + (tipo === "error" ? "error" : "success");
+  alerta.innerHTML = "<span>" + mensaje + "</span>";
+  alerta.classList.remove("hidden");
+  setTimeout(function() { alerta.classList.add("hidden"); }, 5000);
+}
+
+window.guardarUnidades    = guardarUnidades;
+window.restablecerUnidades = restablecerUnidades;
+
+// ────────────────────────────────────────────────────────────
+// FIN gestión de unidades
+// ────────────────────────────────────────────────────────────
 
 function formatearBytes(bytes) {
   if (!bytes) return "";

@@ -11,7 +11,7 @@
 <body>
 
   <!-- ══════════════════════════════════════════════════════
-       PANEL DE ADMINISTRACIÓN (admin.html)
+      PANEL DE ADMINISTRACIÓN (admin.html)
   ══════════════════════════════════════════════════════ -->
 
   <!-- ── BARRA DE NAVEGACIÓN ADMIN ───────────────────────── -->
@@ -41,6 +41,14 @@
         <span id="adminRol" style="font-size:0.7rem; color:var(--text-muted);">Administrador</span>
       </div>
       <button onclick="cerrarSesion()" class="btn btn-secondary btn-sm">Salir</button>
+      <!-- Botón hamburguesa móvil -->
+      <button class="navbar-menu-btn" id="btnMenuMovil" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+
+    <!-- Menú desplegable móvil admin -->
+    <div class="navbar-mobile-menu" id="menuMovil" role="navigation" aria-label="Menú móvil admin">
+      <a href="index.html" class="nav-link" target="_blank">👁️ Ver Portal</a>
+      <button class="nav-link" style="background:none;border:none;cursor:pointer;text-align:left;width:100%;color:var(--text-secondary);" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
     </div>
 
   </nav>
@@ -61,6 +69,10 @@
       <button class="sidebar-item" data-vista="semanas" onclick="mostrarVista('semanas')"
         aria-label="Gestionar semanas">
         <span class="sidebar-icon">📚</span> Gestionar Semanas
+      </button>
+      <button class="sidebar-item" data-vista="unidades" onclick="mostrarVista('unidades')"
+        aria-label="Editar nombres de unidades">
+        <span class="sidebar-icon">✏️</span> Editar Unidades
       </button>
 
       <span class="sidebar-section-label">Accesos rápidos</span>
@@ -186,18 +198,30 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">📄 Archivos PDF adjuntos</label>
+              <label class="form-label">📎 Archivos adjuntos</label>
 
-              <div id="pdfDropZone" class="pdf-dropzone" onclick="document.getElementById('inputPdf').click()"
-                role="button" tabindex="0" aria-label="Zona para subir archivos PDF">
-                <div class="pdf-dropzone-icon">📂</div>
-                <div class="pdf-dropzone-text">Haz clic o arrastra un PDF aquí</div>
-                <div class="pdf-dropzone-hint">Solo archivos .pdf · Máx. 5 MB por archivo</div>
+              <!-- Filtro por tipo -->
+              <div class="file-type-filters" role="group" aria-label="Filtrar por tipo de archivo">
+                <button type="button" class="file-type-btn active" data-tipo="todos" onclick="filtrarTipoAdmin('todos')">Todos</button>
+                <button type="button" class="file-type-btn" data-tipo="pdf" onclick="filtrarTipoAdmin('pdf')">📄 PDF</button>
+                <button type="button" class="file-type-btn" data-tipo="docx" onclick="filtrarTipoAdmin('docx')">📝 Word</button>
+                <button type="button" class="file-type-btn" data-tipo="pptx" onclick="filtrarTipoAdmin('pptx')">📊 PowerPoint</button>
+                <button type="button" class="file-type-btn" data-tipo="imagen" onclick="filtrarTipoAdmin('imagen')">🖼️ Imagen</button>
+                <button type="button" class="file-type-btn" data-tipo="otro" onclick="filtrarTipoAdmin('otro')">📦 Otro</button>
               </div>
 
-              <input type="file" id="inputPdf" accept=".pdf,application/pdf" multiple class="hidden" aria-hidden="true">
+              <div id="pdfDropZone" class="pdf-dropzone" onclick="document.getElementById('inputArchivos').click()"
+                role="button" tabindex="0" aria-label="Zona para subir archivos">
+                <div class="pdf-dropzone-icon">📂</div>
+                <div class="pdf-dropzone-text">Haz clic o arrastra archivos aquí</div>
+                <div class="pdf-dropzone-hint">PDF, Word, PowerPoint, imágenes, ZIP · Máx. 10 MB por archivo</div>
+              </div>
 
-              <div id="pdfListaAdmin" class="pdf-lista-admin" aria-label="PDFs adjuntos" aria-live="polite"></div>
+              <input type="file" id="inputArchivos"
+                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp,.zip,.rar,.txt,.mp4,.mp3"
+                multiple class="hidden" aria-hidden="true">
+
+              <div id="pdfListaAdmin" class="pdf-lista-admin" aria-label="Archivos adjuntos" aria-live="polite"></div>
 
             </div>
 
@@ -222,6 +246,35 @@
 
       </div>
 
+      <!-- ══════════════════════════════════════════════════
+           VISTA: EDITAR UNIDADES
+      ══════════════════════════════════════════════════ -->
+      <div id="vistaUnidades" class="hidden">
+
+        <div class="section-header">
+          <h2 class="section-title">Editar Unidades</h2>
+          <span class="badge badge-blue">4 unidades</span>
+        </div>
+
+        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.5rem;">
+          Personaliza el nombre y la descripción de cada unidad. Los cambios se reflejan inmediatamente en el portal del estudiante.
+        </p>
+
+        <div id="unidadesEditorGrid" class="unidades-editor-grid"></div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:2rem;">
+          <button type="button" onclick="guardarUnidades()" class="btn btn-primary">
+            💾 Guardar Cambios
+          </button>
+          <button type="button" onclick="restablecerUnidades()" class="btn btn-secondary">
+            ↺ Restablecer predeterminados
+          </button>
+        </div>
+
+        <div id="unidadesAlerta" class="hidden" style="margin-top:1rem;"></div>
+
+      </div>
+
     </main>
 
   </div>
@@ -236,6 +289,27 @@
   <script src="supabase-config.js"></script>
   <script src="tema.js"></script>
   <script src="admin.js"></script>
+  <script>
+    // ── Menú hamburguesa admin ───────────────────────────────
+    var btnMenuMovil = document.getElementById("btnMenuMovil");
+    var menuMovil    = document.getElementById("menuMovil");
+    if (btnMenuMovil && menuMovil) {
+      btnMenuMovil.addEventListener("click", function () {
+        var abierto = menuMovil.classList.toggle("open");
+        btnMenuMovil.setAttribute("aria-expanded", abierto);
+        btnMenuMovil.textContent = abierto ? "✕" : "☰";
+      });
+    }
+    document.addEventListener("click", function(e) {
+      if (menuMovil && menuMovil.classList.contains("open")) {
+        if (!menuMovil.contains(e.target) && e.target !== btnMenuMovil) {
+          menuMovil.classList.remove("open");
+          btnMenuMovil.setAttribute("aria-expanded", "false");
+          btnMenuMovil.textContent = "☰";
+        }
+      }
+    });
+  </script>
 
 </body>
 

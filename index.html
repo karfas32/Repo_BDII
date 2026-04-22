@@ -25,7 +25,7 @@
       <div class="navbar-logo" style="display:none;">U</div>
       <div class="navbar-title">
         <span class="navbar-title-main">Base de Datos II</span>
-        <span class="navbar-title-sub">Yangali Tueros Elias C.</span>
+        <span class="navbar-title-sub">UPLA · Portal Académico</span>
       </div>
     </div>
 
@@ -50,7 +50,7 @@
   <div id="vistaGrid">
 
     <section class="hero" aria-labelledby="heroTitulo">
-      <p class="hero-eyebrow">Ingeniería de Sistemas y Computacion · UPLA</p>
+      <p class="hero-eyebrow">Ingeniería de Sistemas · UPLA</p>
       <h1 class="hero-title" id="heroTitulo">Base de Datos II</h1>
       <p class="hero-subtitle">
         Contenido académico organizado en <strong>4 unidades</strong> con 4 semanas cada una.
@@ -76,7 +76,7 @@
         <div class="stat-label">Semanas totales</div>
       </div>
       <div class="stat-item">
-        <div class="stat-value">2026</div>
+        <div class="stat-value">2024</div>
         <div class="stat-label">Año académico</div>
       </div>
     </section>
@@ -88,16 +88,16 @@
     <section class="weeks-section" id="unidades" aria-labelledby="tituloUnidades">
       <div class="section-header">
         <h2 class="section-title" id="tituloUnidades">Unidades del Curso</h2>
-        <span class="badge badge-blue">Ciclo 2026 - I</span>
+        <span class="badge badge-blue">Ciclo 2024 - I</span>
       </div>
       <div id="semanasGrid" role="list" aria-label="Unidades y semanas del curso"></div>
     </section>
 
     <footer class="footer" role="contentinfo">
-      <span>© 2026 Universidad Peruana Los Andes</span> — Portal Académico
+      <span>© 2024 Universidad Peruana Los Andes</span> — Portal Académico
       <br>
       <span style="color:var(--text-muted); font-size:0.72rem;">
-        Ingeniería de Sistemas y Computacion · Proyecto Web Universitario
+        Ingeniería de Sistemas · Proyecto Web Universitario
       </span>
     </footer>
 
@@ -123,10 +123,10 @@
 
       <div class="week-detail-content" id="detalleContenido" aria-live="polite"></div>
 
-      <div id="detallePdfSection" class="pdf-section hidden" aria-label="Archivos PDF adjuntos">
+      <div id="detallePdfSection" class="pdf-section hidden" aria-label="Archivos adjuntos">
         <div class="pdf-section-header">
-          <span class="pdf-section-icon">📄</span>
-          <h3 class="pdf-section-title">Material en PDF</h3>
+          <span class="pdf-section-icon">📎</span>
+          <h3 class="pdf-section-title">Material Adjunto</h3>
         </div>
         <div id="detallePdfLista" class="pdf-lista"></div>
         <div id="pdfViewerWrapper" class="pdf-viewer-wrapper hidden">
@@ -137,8 +137,8 @@
               <button onclick="cerrarVisorPdf()" class="btn btn-secondary btn-sm">✕ Cerrar</button>
             </div>
           </div>
-          <iframe id="pdfVisorFrame" class="pdf-visor-frame" title="Visor de PDF"
-            aria-label="Visor de documento PDF"></iframe>
+          <!-- Contenedor dinámico: iframe / img / video / audio / mensaje -->
+          <div id="visorContenido" class="visor-contenido"></div>
         </div>
       </div>
 
