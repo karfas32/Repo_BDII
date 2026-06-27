@@ -1,54 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Administración — UPLA</title>
-  <link rel="stylesheet" href="styles.css">
+  <!-- Hoja de estilos externa (sin CSS embebido) -->
+  <link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
 
   <!-- ══════════════════════════════════════════════════════
-      PANEL DE ADMINISTRACIÓN (admin.html)
+       PANEL DE ADMINISTRACIÓN (admin.html)
+       Accesible solo para usuarios con rol "admin".
+       Si alguien intenta entrar sin sesión, admin.js
+       lo redirige automáticamente al login.
   ══════════════════════════════════════════════════════ -->
 
   <!-- ── BARRA DE NAVEGACIÓN ADMIN ───────────────────────── -->
   <nav class="navbar" role="navigation" aria-label="Panel de administración">
 
+    <!-- Marca -->
     <div class="navbar-brand">
-      <img src="lg_upla.png" alt="Logo UPLA" class="navbar-logo-img"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <div class="navbar-logo" style="display:none;">U</div>
+      <div class="navbar-logo">U</div>
       <div class="navbar-title">
-        <span class="navbar-title-main">Base de Datos II</span>
-        <span class="navbar-title-sub">UPLA · Panel Admin</span>
+        <span class="navbar-title-main">UPLA Admin</span>
+        <span class="navbar-title-sub">Panel de Control</span>
       </div>
     </div>
 
+    <!-- Links del admin -->
     <div class="navbar-nav">
       <a href="index.html" class="nav-link" target="_blank">Ver Portal →</a>
     </div>
 
+    <!-- Info del administrador -->
     <div class="navbar-user">
-      <button id="btnTema" class="btn-tema" onclick="toggleTema()" aria-label="Cambiar tema" title="Cambiar tema">
-        <span id="iconTema">☀️</span>
-      </button>
       <div class="navbar-avatar">A</div>
       <div style="display:flex; flex-direction:column; line-height:1.2;">
         <span id="adminNombre" style="font-size:0.85rem; color:var(--text-primary); font-weight:600;">Admin</span>
-        <span id="adminRol" style="font-size:0.7rem; color:var(--text-muted);">Administrador</span>
+        <span id="adminRol"    style="font-size:0.7rem; color:var(--text-muted);">Administrador</span>
       </div>
+      <!-- Botón cerrar sesión: llama cerrarSesion() de admin.js -->
       <button onclick="cerrarSesion()" class="btn btn-secondary btn-sm">Salir</button>
-      <!-- Botón hamburguesa móvil -->
-      <button class="navbar-menu-btn" id="btnMenuMovil" aria-label="Abrir menú" aria-expanded="false">☰</button>
-    </div>
-
-    <!-- Menú desplegable móvil admin -->
-    <div class="navbar-mobile-menu" id="menuMovil" role="navigation" aria-label="Menú móvil admin">
-      <a href="index.html" class="nav-link" target="_blank">👁️ Ver Portal</a>
-      <button class="nav-link" style="background:none;border:none;cursor:pointer;text-align:left;width:100%;color:var(--text-secondary);" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
     </div>
 
   </nav>
@@ -56,31 +49,54 @@
   <!-- ── LAYOUT PRINCIPAL ────────────────────────────────── -->
   <div class="admin-layout">
 
-    <!-- ── BARRA LATERAL (sidebar) ───────────────────────── -->
+    <!-- ── BARRA LATERAL (sidebar) ─────────────────────────
+         Cada ítem llama a mostrarVista() de admin.js.
+         El atributo data-vista coincide con el nombre de vista.
+    ───────────────────────────────────────────────────────── -->
     <aside class="admin-sidebar" role="complementary" aria-label="Menú de administración">
 
       <span class="sidebar-section-label">Principal</span>
-      <button class="sidebar-item active" data-vista="dashboard" onclick="mostrarVista('dashboard')"
-        aria-label="Ir al dashboard">
-        <span class="sidebar-icon">📊</span> Dashboard
+
+      <button
+        class="sidebar-item active"
+        data-vista="dashboard"
+        onclick="mostrarVista('dashboard')"
+        aria-label="Ir al dashboard"
+      >
+        <span class="sidebar-icon">📊</span>
+        Dashboard
       </button>
 
       <span class="sidebar-section-label">Contenido</span>
-      <button class="sidebar-item" data-vista="semanas" onclick="mostrarVista('semanas')"
-        aria-label="Gestionar semanas">
-        <span class="sidebar-icon">📚</span> Gestionar Semanas
-      </button>
-      <button class="sidebar-item" data-vista="unidades" onclick="mostrarVista('unidades')"
-        aria-label="Editar nombres de unidades">
-        <span class="sidebar-icon">✏️</span> Editar Unidades
+
+      <button
+        class="sidebar-item"
+        data-vista="semanas"
+        onclick="mostrarVista('semanas')"
+        aria-label="Gestionar semanas"
+      >
+        <span class="sidebar-icon">📚</span>
+        Gestionar Semanas
       </button>
 
       <span class="sidebar-section-label">Accesos rápidos</span>
-      <button class="sidebar-item" onclick="window.open('index.html','_blank')" aria-label="Ver portal del estudiante">
-        <span class="sidebar-icon">👁️</span> Ver Portal
+
+      <button
+        class="sidebar-item"
+        onclick="window.open('index.html','_blank')"
+        aria-label="Ver portal del estudiante"
+      >
+        <span class="sidebar-icon">👁️</span>
+        Ver Portal
       </button>
-      <button class="sidebar-item" onclick="cerrarSesion()" aria-label="Cerrar sesión">
-        <span class="sidebar-icon">🚪</span> Cerrar Sesión
+
+      <button
+        class="sidebar-item"
+        onclick="cerrarSesion()"
+        aria-label="Cerrar sesión"
+      >
+        <span class="sidebar-icon">🚪</span>
+        Cerrar Sesión
       </button>
 
     </aside>
@@ -88,8 +104,10 @@
     <!-- ── ÁREA DE CONTENIDO PRINCIPAL ───────────────────── -->
     <main class="admin-content" role="main">
 
+
       <!-- ══════════════════════════════════════════════════
            VISTA: DASHBOARD
+           Muestra métricas y resumen del contenido.
       ══════════════════════════════════════════════════ -->
       <div id="vistaDashboard">
 
@@ -98,36 +116,50 @@
           <p class="admin-welcome-sub">Gestiona el contenido académico de las 16 semanas del curso.</p>
         </div>
 
+        <!-- KPI Cards: métricas rápidas -->
         <div class="kpi-grid" role="region" aria-label="Métricas del curso">
+
           <div class="kpi-card">
             <div class="kpi-value" id="kpiPublicadas">0</div>
             <div class="kpi-label">Semanas publicadas</div>
           </div>
+
           <div class="kpi-card">
             <div class="kpi-value" id="kpiContenido">0</div>
             <div class="kpi-label">Con contenido</div>
           </div>
+
           <div class="kpi-card">
             <div class="kpi-value" id="kpiPendientes">16</div>
             <div class="kpi-label">Pendientes</div>
           </div>
+
           <div class="kpi-card">
             <div class="kpi-value" id="kpiTotal">16</div>
             <div class="kpi-label">Total semanas</div>
           </div>
+
         </div>
 
+        <!-- Resumen de semanas en el dashboard -->
         <div class="section-header">
           <h2 class="section-title">Resumen de Semanas</h2>
-          <button onclick="mostrarVista('semanas')" class="btn btn-secondary btn-sm">Ver todas →</button>
+          <button onclick="mostrarVista('semanas')" class="btn btn-secondary btn-sm">
+            Ver todas →
+          </button>
         </div>
 
-        <div id="resumenSemanas" role="list" aria-label="Resumen de las primeras semanas"></div>
+        <!-- Contenedor llenado por admin.js > renderizarResumenSemanas() -->
+        <div id="resumenSemanas" role="list" aria-label="Resumen de las primeras semanas">
+        </div>
 
       </div>
+      <!-- fin #vistaDashboard -->
+
 
       <!-- ══════════════════════════════════════════════════
            VISTA: GESTIÓN DE SEMANAS
+           Tabla con todas las semanas y acciones CRUD.
       ══════════════════════════════════════════════════ -->
       <div id="vistaSemanas" class="hidden">
 
@@ -136,181 +168,157 @@
           <span class="badge badge-blue">16 semanas</span>
         </div>
 
+        <!-- Tabla de semanas -->
         <div class="weeks-table-wrapper" role="region" aria-label="Tabla de gestión de semanas">
           <table class="weeks-table" aria-label="Semanas del curso">
             <thead>
               <tr>
                 <th scope="col">N°</th>
-                <th scope="col">Unidad</th>
                 <th scope="col">Título</th>
+                <th scope="col">Descripción</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Acciones</th>
               </tr>
             </thead>
-            <tbody id="tablaSemanasCuerpo"></tbody>
+            <!-- Las filas son generadas por admin.js > renderizarTablaSemanas() -->
+            <tbody id="tablaSemanasCuerpo">
+            </tbody>
           </table>
         </div>
 
+        <!-- Nota informativa al pie de la tabla -->
         <div class="alert alert-info" style="margin-top:1rem;">
           <span>ℹ</span>
-          <span>Los cambios se reflejan inmediatamente en el portal del estudiante. Solo las semanas
-            <strong>Publicadas</strong> son visibles para los estudiantes.</span>
+          <span>
+            Los cambios se reflejan inmediatamente en el portal del estudiante.
+            Solo las semanas <strong>Publicadas</strong> son visibles para los estudiantes.
+          </span>
         </div>
 
       </div>
+      <!-- fin #vistaSemanas -->
+
 
       <!-- ══════════════════════════════════════════════════
            VISTA: EDITOR DE SEMANA
+           Formulario para crear o editar el contenido
+           de una semana específica.
       ══════════════════════════════════════════════════ -->
       <div id="vistaEditor" class="hidden">
 
         <div class="week-editor">
 
+          <!-- Encabezado del editor -->
           <div class="week-editor-header">
             <h2 class="section-title" id="editorNumero">Editor de Semana</h2>
-            <p id="editorSubtitulo"
-              style="color:var(--text-accent); font-size:0.82rem; font-weight:600; margin-top:2px;"></p>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
               Completa los campos y guarda el contenido. Al publicar, será visible para los estudiantes.
             </p>
           </div>
 
+          <!-- Formulario del editor -->
+          <!-- admin.js maneja guardarEditor() al hacer clic en el botón -->
           <div role="form" aria-label="Formulario de edición de semana">
 
+            <!-- Título de la semana -->
             <div class="form-group">
-              <label for="editorTitulo" class="form-label">Título de la semana <span
-                  style="color:var(--error);">*</span></label>
-              <input type="text" id="editorTitulo" class="form-input" placeholder="Ej: Introducción al Diseño Web"
-                maxlength="120" required aria-required="true">
+              <label for="editorTitulo" class="form-label">
+                Título de la semana <span style="color:var(--error);">*</span>
+              </label>
+              <input
+                type="text"
+                id="editorTitulo"
+                class="form-input"
+                placeholder="Ej: Introducción al Diseño Web"
+                maxlength="120"
+                required
+                aria-required="true"
+              >
             </div>
 
+            <!-- Descripción breve -->
             <div class="form-group">
               <label for="editorDescripcion" class="form-label">Descripción breve</label>
-              <input type="text" id="editorDescripcion" class="form-input"
-                placeholder="Resumen de una línea sobre el tema de la semana" maxlength="200">
+              <input
+                type="text"
+                id="editorDescripcion"
+                class="form-input"
+                placeholder="Resumen de una línea sobre el tema de la semana"
+                maxlength="200"
+              >
             </div>
 
+            <!-- Contenido académico -->
             <div class="form-group">
               <label for="editorContenido" class="form-label">Contenido académico</label>
-              <textarea id="editorContenido" class="form-textarea"
+              <textarea
+                id="editorContenido"
+                class="form-textarea"
                 placeholder="Escribe aquí el contenido completo de la semana: objetivos, temas, actividades, recursos, etc."
-                style="min-height: 220px;"></textarea>
+                style="min-height: 220px;"
+              ></textarea>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">📎 Archivos adjuntos</label>
-
-              <!-- Filtro por tipo -->
-              <div class="file-type-filters" role="group" aria-label="Filtrar por tipo de archivo">
-                <button type="button" class="file-type-btn active" data-tipo="todos" onclick="filtrarTipoAdmin('todos')">Todos</button>
-                <button type="button" class="file-type-btn" data-tipo="pdf" onclick="filtrarTipoAdmin('pdf')">📄 PDF</button>
-                <button type="button" class="file-type-btn" data-tipo="docx" onclick="filtrarTipoAdmin('docx')">📝 Word</button>
-                <button type="button" class="file-type-btn" data-tipo="pptx" onclick="filtrarTipoAdmin('pptx')">📊 PowerPoint</button>
-                <button type="button" class="file-type-btn" data-tipo="imagen" onclick="filtrarTipoAdmin('imagen')">🖼️ Imagen</button>
-                <button type="button" class="file-type-btn" data-tipo="otro" onclick="filtrarTipoAdmin('otro')">📦 Otro</button>
-              </div>
-
-              <div id="pdfDropZone" class="pdf-dropzone" onclick="document.getElementById('inputArchivos').click()"
-                role="button" tabindex="0" aria-label="Zona para subir archivos">
-                <div class="pdf-dropzone-icon">📂</div>
-                <div class="pdf-dropzone-text">Haz clic o arrastra archivos aquí</div>
-                <div class="pdf-dropzone-hint">PDF, Word, PowerPoint, imágenes, ZIP · Máx. 10 MB por archivo</div>
-              </div>
-
-              <input type="file" id="inputArchivos"
-                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp,.zip,.rar,.txt,.mp4,.mp3"
-                multiple class="hidden" aria-hidden="true">
-
-              <div id="pdfListaAdmin" class="pdf-lista-admin" aria-label="Archivos adjuntos" aria-live="polite"></div>
-
-            </div>
-
+            <!-- Checkbox: publicar inmediatamente -->
             <div class="form-group" style="display:flex; align-items:center; gap:10px;">
-              <input type="checkbox" id="editorPublicar"
-                style="width: 18px; height: 18px; accent-color: var(--upla-blue-light); cursor: pointer;">
-              <label for="editorPublicar"
-                style="cursor:pointer; color:var(--text-secondary); font-size:0.9rem;">Publicar esta semana (visible
-                para estudiantes)</label>
+              <input
+                type="checkbox"
+                id="editorPublicar"
+                style="
+                  width: 18px;
+                  height: 18px;
+                  accent-color: var(--upla-blue-light);
+                  cursor: pointer;
+                "
+              >
+              <label for="editorPublicar" style="cursor:pointer; color:var(--text-secondary); font-size:0.9rem;">
+                Publicar esta semana (visible para estudiantes)
+              </label>
             </div>
 
+            <!-- Botones de acción -->
             <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:1.5rem;">
-              <button type="button" onclick="guardarEditor()" class="btn btn-primary"
-                aria-label="Guardar cambios de la semana">💾 Guardar Cambios</button>
-              <button type="button" onclick="cancelarEditor()" class="btn btn-secondary"
-                aria-label="Cancelar y volver a la lista">✕ Cancelar</button>
+              <button
+                type="button"
+                onclick="guardarEditor()"
+                class="btn btn-primary"
+                aria-label="Guardar cambios de la semana"
+              >
+                💾 Guardar Cambios
+              </button>
+              <button
+                type="button"
+                onclick="cancelarEditor()"
+                class="btn btn-secondary"
+                aria-label="Cancelar y volver a la lista"
+              >
+                ✕ Cancelar
+              </button>
             </div>
 
           </div>
+          <!-- fin form -->
 
         </div>
+        <!-- fin .week-editor -->
 
       </div>
+      <!-- fin #vistaEditor -->
 
-      <!-- ══════════════════════════════════════════════════
-           VISTA: EDITAR UNIDADES
-      ══════════════════════════════════════════════════ -->
-      <div id="vistaUnidades" class="hidden">
-
-        <div class="section-header">
-          <h2 class="section-title">Editar Unidades</h2>
-          <span class="badge badge-blue">4 unidades</span>
-        </div>
-
-        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.5rem;">
-          Personaliza el nombre y la descripción de cada unidad. Los cambios se reflejan inmediatamente en el portal del estudiante.
-        </p>
-
-        <div id="unidadesEditorGrid" class="unidades-editor-grid"></div>
-
-        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:2rem;">
-          <button type="button" onclick="guardarUnidades()" class="btn btn-primary">
-            💾 Guardar Cambios
-          </button>
-          <button type="button" onclick="restablecerUnidades()" class="btn btn-secondary">
-            ↺ Restablecer predeterminados
-          </button>
-        </div>
-
-        <div id="unidadesAlerta" class="hidden" style="margin-top:1rem;"></div>
-
-      </div>
 
     </main>
+    <!-- fin .admin-content -->
 
   </div>
+  <!-- fin .admin-layout -->
+
 
   <!-- ── CONTENEDOR DE NOTIFICACIONES TOAST ──────────────── -->
+  <!-- admin.js inserta los toasts aquí dinámicamente -->
   <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
 
-  <!-- ══════════════════════════════════════════════════════
-       SCRIPTS (cargados una sola vez)
-  ══════════════════════════════════════════════════════ -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="tema.js"></script>
-  <script src="admin.js"></script>
-  <script>
-    // ── Menú hamburguesa admin ───────────────────────────────
-    var btnMenuMovil = document.getElementById("btnMenuMovil");
-    var menuMovil    = document.getElementById("menuMovil");
-    if (btnMenuMovil && menuMovil) {
-      btnMenuMovil.addEventListener("click", function () {
-        var abierto = menuMovil.classList.toggle("open");
-        btnMenuMovil.setAttribute("aria-expanded", abierto);
-        btnMenuMovil.textContent = abierto ? "✕" : "☰";
-      });
-    }
-    document.addEventListener("click", function(e) {
-      if (menuMovil && menuMovil.classList.contains("open")) {
-        if (!menuMovil.contains(e.target) && e.target !== btnMenuMovil) {
-          menuMovil.classList.remove("open");
-          btnMenuMovil.setAttribute("aria-expanded", "false");
-          btnMenuMovil.textContent = "☰";
-        }
-      }
-    });
-  </script>
 
+  <!-- Script del panel de administración (archivo externo) -->
+  <script src="js/admin.js"></script>
 </body>
-
 </html>

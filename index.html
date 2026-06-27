@@ -1,98 +1,124 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal Académico — UPLA</title>
-  <!-- Hoja de estilos externa -->
-  <link rel="stylesheet" href="styles.css">
+  <!-- Hoja de estilos externa (sin CSS embebido) -->
+  <link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
 
   <!-- ══════════════════════════════════════════════════════
        PORTAL DEL ESTUDIANTE (index.html)
        Vista principal con las 16 semanas del curso.
+       Accesible para cualquier visitante, con más opciones
+       si el usuario ha iniciado sesión.
   ══════════════════════════════════════════════════════ -->
 
   <!-- ── BARRA DE NAVEGACIÓN ─────────────────────────────── -->
   <nav class="navbar" role="navigation" aria-label="Navegación principal">
 
+    <!-- Marca / Logo UPLA -->
     <div class="navbar-brand">
-      <img src="lg_upla.png" alt="Logo UPLA" class="navbar-logo-img"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <div class="navbar-logo" style="display:none;">U</div>
+      <div class="navbar-logo">U</div>
       <div class="navbar-title">
-        <span class="navbar-title-main">Base de Datos II</span>
-        <span class="navbar-title-sub">UPLA · Portal Académico</span>
+        <span class="navbar-title-main">UPLA</span>
+        <span class="navbar-title-sub">Portal Académico</span>
       </div>
     </div>
 
+    <!-- Links de navegación -->
     <div class="navbar-nav">
       <a href="index.html" class="nav-link active">Inicio</a>
-      <a href="#unidades" class="nav-link">Unidades</a>
       <a href="login.html" class="nav-link">Mi Cuenta</a>
     </div>
 
-    <div style="display:flex; align-items:center; gap:10px;">
-      <button id="btnTema" class="btn-tema" onclick="toggleTema()" aria-label="Cambiar tema" title="Cambiar tema">
-        <span id="iconTema">☀️</span>
-      </button>
-      <div id="navUser"></div>
-    </div>
+    <!-- Área de usuario (llenada por main.js) -->
+    <div id="navUser"></div>
 
   </nav>
 
   <!-- ══════════════════════════════════════════════════════
        VISTA: GRILLA DE SEMANAS
+       Visible por defecto. Se oculta cuando el usuario
+       abre el detalle de una semana.
   ══════════════════════════════════════════════════════ -->
   <div id="vistaGrid">
 
+    <!-- Hero / Banner principal -->
     <section class="hero" aria-labelledby="heroTitulo">
-      <p class="hero-eyebrow">Ingeniería de Sistemas · UPLA</p>
-      <h1 class="hero-title" id="heroTitulo">Base de Datos II</h1>
+
+      <p class="hero-eyebrow">Ingeniería de Sistemas</p>
+
+      <h1 class="hero-title" id="heroTitulo">
+        Contenido Académico<br>por Semanas
+      </h1>
+
       <p class="hero-subtitle">
-        Contenido académico organizado en <strong>4 unidades</strong> con 4 semanas cada una.
-        El material se publica progresivamente a lo largo del ciclo académico.
+        Accede al material de estudio organizado en 16 semanas.
+        El contenido se publica progresivamente a lo largo del ciclo académico.
       </p>
+
       <div class="hero-actions">
-        <a href="#unidades" class="btn btn-primary btn-lg">Ver Unidades ↓</a>
-        <a href="login.html" class="btn btn-secondary btn-lg">Iniciar Sesión</a>
+        <a href="#semanas" class="btn btn-primary btn-lg">
+          Ver Semanas ↓
+        </a>
+        <a href="login.html" class="btn btn-secondary btn-lg">
+          Iniciar Sesión
+        </a>
       </div>
+
     </section>
 
+    <!-- Métricas del curso -->
     <section class="stats-row" aria-label="Estadísticas del curso">
-      <div class="stat-item">
-        <div class="stat-value">4</div>
-        <div class="stat-label">Unidades</div>
-      </div>
+
       <div class="stat-item">
         <div class="stat-value" id="statPublicadas">0</div>
         <div class="stat-label">Semanas publicadas</div>
       </div>
+
       <div class="stat-item">
         <div class="stat-value" id="statTotal">16</div>
         <div class="stat-label">Semanas totales</div>
       </div>
+
+      <div class="stat-item">
+        <div class="stat-value">1</div>
+        <div class="stat-label">Ciclo académico</div>
+      </div>
+
       <div class="stat-item">
         <div class="stat-value">2024</div>
         <div class="stat-label">Año académico</div>
       </div>
+
     </section>
 
+    <!-- Separador visual -->
     <div style="max-width:1200px; margin:0 auto; padding:0 2rem;">
       <div class="divider"></div>
     </div>
 
-    <section class="weeks-section" id="unidades" aria-labelledby="tituloUnidades">
+    <!-- ── SECCIÓN DE SEMANAS ──────────────────────────────── -->
+    <section class="weeks-section" id="semanas" aria-labelledby="tituloSemanas">
+
       <div class="section-header">
-        <h2 class="section-title" id="tituloUnidades">Unidades del Curso</h2>
+        <h2 class="section-title" id="tituloSemanas">
+          Semanas del Curso
+        </h2>
         <span class="badge badge-blue">Ciclo 2024 - I</span>
       </div>
-      <div id="semanasGrid" role="list" aria-label="Unidades y semanas del curso"></div>
+
+      <!-- Grilla de 16 tarjetas (generada por main.js) -->
+      <div id="semanasGrid" class="weeks-grid" role="list" aria-label="Lista de semanas">
+        <!-- Las tarjetas se insertan dinámicamente desde main.js -->
+      </div>
+
     </section>
 
+    <!-- Footer -->
     <footer class="footer" role="contentinfo">
       <span>© 2024 Universidad Peruana Los Andes</span> — Portal Académico
       <br>
@@ -102,62 +128,57 @@
     </footer>
 
   </div>
+  <!-- fin #vistaGrid -->
+
 
   <!-- ══════════════════════════════════════════════════════
        VISTA: DETALLE DE SEMANA
+       Oculto por defecto. Se muestra cuando el usuario
+       hace clic en una tarjeta de semana publicada.
   ══════════════════════════════════════════════════════ -->
   <div id="vistaDetalle" class="hidden">
 
     <div class="week-detail active" role="main">
 
-      <div class="week-detail-back" onclick="volverAGrilla()" role="button" tabindex="0"
-        aria-label="Volver al listado de semanas">
+      <!-- Botón volver -->
+      <!-- onclick llama a volverAGrilla() definida en main.js -->
+      <div
+        class="week-detail-back"
+        onclick="volverAGrilla()"
+        role="button"
+        tabindex="0"
+        aria-label="Volver al listado de semanas"
+      >
         ← Volver al listado
       </div>
 
+      <!-- Encabezado del detalle -->
       <div class="week-detail-header">
         <h1 class="week-detail-title" id="detalleTitulo">Título de la semana</h1>
         <p class="week-detail-meta" id="detalleSubtitulo"></p>
         <p class="week-detail-meta" id="detalleFecha" style="margin-top:4px;"></p>
       </div>
 
-      <div class="week-detail-content" id="detalleContenido" aria-live="polite"></div>
-
-      <div id="detallePdfSection" class="pdf-section hidden" aria-label="Archivos adjuntos">
-        <div class="pdf-section-header">
-          <span class="pdf-section-icon">📎</span>
-          <h3 class="pdf-section-title">Material Adjunto</h3>
-        </div>
-        <div id="detallePdfLista" class="pdf-lista"></div>
-        <div id="pdfViewerWrapper" class="pdf-viewer-wrapper hidden">
-          <div class="pdf-viewer-toolbar">
-            <span id="pdfViewerNombre" class="pdf-viewer-nombre"></span>
-            <div style="display:flex; gap:8px;">
-              <a id="pdfDescargarBtn" class="btn btn-secondary btn-sm" download>⬇️ Descargar</a>
-              <button onclick="cerrarVisorPdf()" class="btn btn-secondary btn-sm">✕ Cerrar</button>
-            </div>
-          </div>
-          <!-- Contenedor dinámico: iframe / img / video / audio / mensaje -->
-          <div id="visorContenido" class="visor-contenido"></div>
-        </div>
+      <!-- Contenido académico -->
+      <div class="week-detail-content" id="detalleContenido" aria-live="polite">
+        <!-- El contenido se inserta desde main.js -->
       </div>
 
+      <!-- Navegación al pie del detalle -->
       <div style="display:flex; justify-content:flex-end; margin-top:2rem;">
-        <button onclick="volverAGrilla()" class="btn btn-secondary">← Regresar a las semanas</button>
+        <button
+          onclick="volverAGrilla()"
+          class="btn btn-secondary"
+        >← Regresar a las semanas</button>
       </div>
 
     </div>
 
   </div>
+  <!-- fin #vistaDetalle -->
 
-  <!-- ══════════════════════════════════════════════════════
-       SCRIPTS (cargados una sola vez)
-  ══════════════════════════════════════════════════════ -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="tema.js"></script>
-  <script src="main.js"></script>
 
+  <!-- Script principal del portal (archivo externo) -->
+  <script src="js/main.js"></script>
 </body>
-
 </html>
