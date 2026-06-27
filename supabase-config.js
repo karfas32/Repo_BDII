@@ -1,11 +1,23 @@
-// Configuración de Supabase - UPLA Proyecto BD2
+/* ============================================================
+   PROYECTO WEB - UPLA
+   Archivo: supabase-config.js
+   Descripción: Configuración de Supabase (nuevo formato 2025)
+   ============================================================ */
+
 const SUPABASE_URL = "https://ckmggqrangyssmphbxgw.supabase.co";
 
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrbWdncXJhbmd5c3NtcGhieGd3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjIwNTQxMywiZXhwIjoyMDkxNzgxNDEzfQ.gvPdY8q7QB16NEx-LyKBvLpSGRfKfNBles4kX3pgEOs";
+// PUBLISHABLE KEY = anon key pública (segura para el frontend)
+// SECRET KEY      = nunca va aquí, solo en servidores/edge functions
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_7pEztTLjZzkAZF68Vyy26Q_iqOD4gD5";
 
-// Inicializar el cliente de Supabase
-window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Prueba de conexión (para verificar en consola)
-console.log("✅ Supabase configurado");
-console.log("URL:", SUPABASE_URL);
+try {
+  window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
+    }
+  });
+  console.log("✅ Supabase inicializado correctamente");
+} catch (err) {
+  console.error("❌ Error iniciando Supabase:", err);
+}
