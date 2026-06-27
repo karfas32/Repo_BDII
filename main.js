@@ -5,12 +5,32 @@
    ============================================================ */
 
 const SESSION_KEY = "upla_session";
-const UNIDADES = [
-  { numero: 1, nombre: "Unidad I", descripcion: "Fundamentos y Modelo Relacional", semanas: [1, 2, 3, 4] },
-  { numero: 2, nombre: "Unidad II", descripcion: "Diseño Avanzado de Bases de Datos", semanas: [5, 6, 7, 8] },
-  { numero: 3, nombre: "Unidad III", descripcion: "Programación en Base de Datos", semanas: [9, 10, 11, 12] },
-  { numero: 4, nombre: "Unidad IV", descripcion: "Administración y Seguridad", semanas: [13, 14, 15, 16] }
+const UNIDADES_STORAGE_KEY = "upla_unidades";
+
+const UNIDADES_DEFAULT = [
+  { numero: 1, nombre: "Unidad I",   descripcion: "Fundamentos y Modelo Relacional",   semanas: [1,2,3,4]    },
+  { numero: 2, nombre: "Unidad II",  descripcion: "Diseño Avanzado de Bases de Datos",  semanas: [5,6,7,8]    },
+  { numero: 3, nombre: "Unidad III", descripcion: "Programación en Base de Datos",      semanas: [9,10,11,12] },
+  { numero: 4, nombre: "Unidad IV",  descripcion: "Administración y Seguridad",         semanas: [13,14,15,16] }
 ];
+
+// Cargar nombres personalizados guardados por el admin
+let UNIDADES = UNIDADES_DEFAULT.map(function(u) { return Object.assign({}, u); });
+(function cargarNombresUnidades() {
+  try {
+    const guardadas = localStorage.getItem(UNIDADES_STORAGE_KEY);
+    if (guardadas) {
+      const arr = JSON.parse(guardadas);
+      arr.forEach(function(u) {
+        const idx = UNIDADES.findIndex(function(x) { return x.numero === u.numero; });
+        if (idx !== -1) {
+          UNIDADES[idx].nombre      = u.nombre      || UNIDADES[idx].nombre;
+          UNIDADES[idx].descripcion = u.descripcion || UNIDADES[idx].descripcion;
+        }
+      });
+    }
+  } catch (_) { /* usar defaults */ }
+})();
 
 const estado = {
   sesion: null,
@@ -207,12 +227,51 @@ function renderizarDetalle(semana) {
   renderizarPdfsDetalle(semana.archivos_pdf || []);
 }
 
-function renderizarPdfsDetalle(pdfs) {
+// ============================================================
+// VISOR DE ARCHIVOS — multi-tipo
+// ============================================================
+
+const TIPOS_VISOR = {
+  pdf:  { icono: "📄", etiqueta: "PDF",        visor: "iframe"     },
+  doc:  { icono: "📝", etiqueta: "Word",        visor: "descarga"   },
+  docx: { icono: "📝", etiqueta: "Word",        visor: "office365"  },
+  ppt:  { icono: "📊", etiqueta: "PowerPoint",  visor: "descarga"   },
+  pptx: { icono: "📊", etiqueta: "PowerPoint",  visor: "office365"  },
+  xls:  { icono: "📋", etiqueta: "Excel",       visor: "descarga"   },
+  xlsx: { icono: "📋", etiqueta: "Excel",       visor: "office365"  },
+  png:  { icono: "🖼️", etiqueta: "Imagen",      visor: "imagen"     },
+  jpg:  { icono: "🖼️", etiqueta: "Imagen",      visor: "imagen"     },
+  jpeg: { icono: "🖼️", etiqueta: "Imagen",      visor: "imagen"     },
+  gif:  { icono: "🖼️", etiqueta: "GIF",         visor: "imagen"     },
+  webp: { icono: "🖼️", etiqueta: "Imagen",      visor: "imagen"     },
+  mp4:  { icono: "🎬", etiqueta: "Video",        visor: "video"      },
+  mp3:  { icono: "🎵", etiqueta: "Audio",        visor: "audio"      },
+  txt:  { icono: "📃", etiqueta: "Texto",        visor: "iframe"     },
+  zip:  { icono: "📦", etiqueta: "ZIP",          visor: "descarga"   },
+  rar:  { icono: "📦", etiqueta: "RAR",          visor: "descarga"   },
+};
+
+function formatearBytes(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+function obtenerTipoVisor(nombre) {
+  const ext = (nombre || "").split(".").pop().toLowerCase();
+  return TIPOS_VISOR[ext] || { icono: "📎", etiqueta: ext.toUpperCase(), visor: "descarga" };
+}
+
+// Índice del archivo actualmente en el visor
+let archivoVisorActivo = -1;
+
+function renderizarPdfsDetalle(archivos) {
   const seccion = document.getElementById("detallePdfSection");
-  const lista = document.getElementById("detallePdfLista");
+  const lista   = document.getElementById("detallePdfLista");
   if (!seccion || !lista) return;
 
-  if (!pdfs || pdfs.length === 0) {
+  if (!archivos || archivos.length === 0) {
     seccion.classList.add("hidden");
     return;
   }
@@ -220,61 +279,188 @@ function renderizarPdfsDetalle(pdfs) {
   seccion.classList.remove("hidden");
   lista.innerHTML = "";
   cerrarVisorPdf();
+  archivoVisorActivo = -1;
 
-  pdfs.forEach(function (pdf, indice) {
+  // Filtros de tipo para el estudiante
+  const tiposPresentes = [...new Set(archivos.map(function(a) {
+    return obtenerTipoVisor(a.nombre).etiqueta;
+  }))];
+
+  if (tiposPresentes.length > 1) {
+    const filtrosEl = document.createElement("div");
+    filtrosEl.className = "file-type-filters";
+    filtrosEl.setAttribute("role", "group");
+    filtrosEl.setAttribute("aria-label", "Filtrar archivos");
+    filtrosEl.innerHTML = `<button class="file-type-btn active" onclick="filtrarArchivosEstudiante('todos', this)">Todos (${archivos.length})</button>`;
+    tiposPresentes.forEach(function(tipo) {
+      const count = archivos.filter(function(a){ return obtenerTipoVisor(a.nombre).etiqueta === tipo; }).length;
+      filtrosEl.innerHTML += `<button class="file-type-btn" onclick="filtrarArchivosEstudiante('${tipo}', this)">${tipo} (${count})</button>`;
+    });
+    lista.appendChild(filtrosEl);
+  }
+
+  const contenedorItems = document.createElement("div");
+  contenedorItems.id = "listaArchivosEstudiante";
+  contenedorItems.className = "pdf-lista";
+  lista.appendChild(contenedorItems);
+
+  renderizarItemsArchivos(archivos, contenedorItems, archivos);
+}
+
+function renderizarItemsArchivos(archivos, contenedor, todosList) {
+  contenedor.innerHTML = "";
+  archivos.forEach(function (archivo, indice) {
+    const indiceReal = todosList.indexOf(archivo);
+    const tipo = obtenerTipoVisor(archivo.nombre);
+    const ext  = (archivo.nombre || "").split(".").pop().toLowerCase();
+
     const item = document.createElement("div");
     item.className = "pdf-item-usuario";
+    item.dataset.tipo = tipo.etiqueta;
+
+    // Decide qué botones mostrar
+    let botonesHTML = `<a href="${archivo.base64}" download="${archivo.nombre}" class="btn btn-secondary btn-sm">⬇️ Descargar</a>`;
+
+    if (tipo.visor === "iframe" || tipo.visor === "imagen" || tipo.visor === "video" || tipo.visor === "audio") {
+      botonesHTML = `
+        <button onclick="abrirVisorPdf(${indiceReal})" class="btn btn-primary btn-sm">👁️ Ver</button>
+        ${botonesHTML}
+      `;
+    } else if (tipo.visor === "office365") {
+      botonesHTML = `
+        <button onclick="abrirVisorPdf(${indiceReal})" class="btn btn-primary btn-sm">👁️ Ver online</button>
+        ${botonesHTML}
+      `;
+    }
+
     item.innerHTML = `
       <div class="pdf-item-info">
-        <span class="pdf-item-icono">📄</span>
+        <span class="pdf-item-icono">${tipo.icono}</span>
         <div>
-          <div class="pdf-item-nombre">${pdf.nombre}</div>
-          <div class="pdf-item-tamaño">${formatearBytes(pdf.tamaño)}</div>
+          <div class="pdf-item-nombre">${escapeHtml(archivo.nombre)}</div>
+          <div style="display:flex; gap:6px; margin-top:3px; align-items:center;">
+            <span class="file-badge file-badge-${ext}">${tipo.etiqueta}</span>
+            <span class="pdf-item-tamaño">${formatearBytes(archivo.tamaño)}</span>
+          </div>
         </div>
       </div>
-      <div class="pdf-item-acciones">
-        <button onclick="abrirVisorPdf(${indice})" class="btn primary-btn sm">👁️ Ver</button>
-        <a href="${pdf.base64}" download="${pdf.nombre}" class="btn secondary-btn sm">⬇️ Descargar</a>
-      </div>
+      <div class="pdf-item-acciones">${botonesHTML}</div>
     `;
-    lista.appendChild(item);
+    contenedor.appendChild(item);
   });
 }
 
-function formatearBytes(bytes) {
-  if (!bytes) return "";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+function filtrarArchivosEstudiante(tipo, btnEl) {
+  const semana = estado.semanaActiva;
+  if (!semana) return;
+  const archivos = semana.archivos_pdf || [];
+
+  document.querySelectorAll(".file-type-filters .file-type-btn").forEach(function(b) {
+    b.classList.remove("active");
+  });
+  if (btnEl) btnEl.classList.add("active");
+
+  const contenedor = document.getElementById("listaArchivosEstudiante");
+  if (!contenedor) return;
+
+  const filtrados = tipo === "todos"
+    ? archivos
+    : archivos.filter(function(a) { return obtenerTipoVisor(a.nombre).etiqueta === tipo; });
+
+  renderizarItemsArchivos(filtrados, contenedor, archivos);
+  cerrarVisorPdf();
+}
+
+function escapeHtml(texto) {
+  if (!texto) return "";
+  return texto.replace(/[&<>]/g, function (m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
 }
 
 function abrirVisorPdf(indice) {
   const semana = estado.semanaActiva;
   if (!semana || !semana.archivos_pdf || !semana.archivos_pdf[indice]) return;
 
-  const pdf = semana.archivos_pdf[indice];
-  const frame = document.getElementById("pdfVisorFrame");
+  const archivo = semana.archivos_pdf[indice];
+  const tipo    = obtenerTipoVisor(archivo.nombre);
   const wrapper = document.getElementById("pdfViewerWrapper");
-  const nombre = document.getElementById("pdfViewerNombre");
+  const nombre  = document.getElementById("pdfViewerNombre");
   const descBtn = document.getElementById("pdfDescargarBtn");
+  const contenidoVisor = document.getElementById("visorContenido");
 
-  if (!frame || !wrapper) return;
+  if (!wrapper || !contenidoVisor) return;
 
-  frame.src = pdf.base64;
-  if (descBtn) {
-    descBtn.href = pdf.base64;
-    descBtn.download = pdf.nombre;
+  archivoVisorActivo = indice;
+  if (descBtn)  { descBtn.href = archivo.base64; descBtn.download = archivo.nombre; }
+  if (nombre)   nombre.textContent = archivo.nombre;
+
+  // Limpiar visor anterior
+  contenidoVisor.innerHTML = "";
+
+  if (tipo.visor === "iframe" || tipo.visor === "descarga") {
+    // PDF y TXT → iframe
+    const frame = document.createElement("iframe");
+    frame.className = "pdf-visor-frame";
+    frame.title = archivo.nombre;
+    frame.src = archivo.base64;
+    contenidoVisor.appendChild(frame);
+
+  } else if (tipo.visor === "imagen") {
+    // Imágenes → <img>
+    const img = document.createElement("img");
+    img.src = archivo.base64;
+    img.alt = archivo.nombre;
+    img.className = "visor-imagen";
+    contenidoVisor.appendChild(img);
+
+  } else if (tipo.visor === "video") {
+    const vid = document.createElement("video");
+    vid.src = archivo.base64;
+    vid.controls = true;
+    vid.className = "visor-video";
+    contenidoVisor.appendChild(vid);
+
+  } else if (tipo.visor === "audio") {
+    const aud = document.createElement("audio");
+    aud.src = archivo.base64;
+    aud.controls = true;
+    aud.className = "visor-audio";
+    contenidoVisor.appendChild(aud);
+
+  } else if (tipo.visor === "office365") {
+    // Para DOCX/PPTX/XLSX sólo podemos ofrecer descarga + mensaje
+    // (base64 no es URL pública para office online viewer)
+    contenidoVisor.innerHTML = `
+      <div class="visor-no-preview">
+        <div class="visor-no-preview-icon">${tipo.icono}</div>
+        <p class="visor-no-preview-titulo">Vista previa no disponible</p>
+        <p class="visor-no-preview-msg">
+          Los archivos <strong>${tipo.etiqueta}</strong> no pueden previsualizarse directamente en el navegador.
+          Descárgalo para abrirlo con la aplicación correspondiente.
+        </p>
+        <a href="${archivo.base64}" download="${archivo.nombre}" class="btn btn-primary">
+          ⬇️ Descargar ${archivo.nombre}
+        </a>
+      </div>`;
   }
-  if (nombre) nombre.textContent = pdf.nombre;
+
   wrapper.classList.remove("hidden");
   wrapper.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function cerrarVisorPdf() {
   const wrapper = document.getElementById("pdfViewerWrapper");
-  const frame = document.getElementById("pdfVisorFrame");
+  const contenidoVisor = document.getElementById("visorContenido");
   if (wrapper) wrapper.classList.add("hidden");
-  if (frame) frame.src = "";
+  if (contenidoVisor) contenidoVisor.innerHTML = "";
+  archivoVisorActivo = -1;
 }
+
+window.filtrarArchivosEstudiante = filtrarArchivosEstudiante;
 
 function volverAGrilla() {
   estado.semanaActiva = null;

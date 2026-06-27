@@ -123,10 +123,10 @@
 
       <div class="week-detail-content" id="detalleContenido" aria-live="polite"></div>
 
-      <div id="detallePdfSection" class="pdf-section hidden" aria-label="Archivos PDF adjuntos">
+      <div id="detallePdfSection" class="pdf-section hidden" aria-label="Archivos adjuntos">
         <div class="pdf-section-header">
-          <span class="pdf-section-icon">📄</span>
-          <h3 class="pdf-section-title">Material en PDF</h3>
+          <span class="pdf-section-icon">📎</span>
+          <h3 class="pdf-section-title">Material Adjunto</h3>
         </div>
         <div id="detallePdfLista" class="pdf-lista"></div>
         <div id="pdfViewerWrapper" class="pdf-viewer-wrapper hidden">
@@ -137,8 +137,8 @@
               <button onclick="cerrarVisorPdf()" class="btn btn-secondary btn-sm">✕ Cerrar</button>
             </div>
           </div>
-          <iframe id="pdfVisorFrame" class="pdf-visor-frame" title="Visor de PDF"
-            aria-label="Visor de documento PDF"></iframe>
+          <!-- Contenedor dinámico: iframe / img / video / audio / mensaje -->
+          <div id="visorContenido" class="visor-contenido"></div>
         </div>
       </div>
 
