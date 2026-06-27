@@ -51,34 +51,37 @@ function verificarAccesoAdmin() {
   return true;
 }
 
+// Esta función carga las semanas desde Supabase
 async function cargarSemanas() {
   try {
     const { data, error } = await window.supabaseClient
-      .from('semanas')
-      .select('*')
-      .order('numero_semana', { ascending: true });
+      .from("semanas")
+      .select("*")
+      .order("numero_semana", { ascending: true });
 
-    if (error) throw error;
-
-    if (data && data.length > 0) {
-      estadoAdmin.semanas = data;
-    } else {
-      // Si no hay datos, crear semanas iniciales
-      await crearSemanasIniciales();
-      const { data: nuevasSemanas } = await window.supabaseClient
-        .from('semanas')
-        .select('*')
-        .order('numero_semana', { ascending: true });
-      estadoAdmin.semanas = nuevasSemanas || [];
+    if (error) {
+      console.error("❌ Error cargando semanas:", error);
+      return;
     }
 
-    renderizarDashboard();
-    renderizarTablaSemanas();
-  } catch (error) {
-    console.error("Error cargando semanas:", error);
-    mostrarToast("Error al cargar las semanas", "error");
+    // Renderizar semanas en consola o en la UI
+    console.log("✅ Semanas cargadas:", data);
+
+    const contenedor = document.getElementById("listaSemanas");
+    if (contenedor) {
+      contenedor.innerHTML = "";
+      data.forEach(semana => {
+        const item = document.createElement("div");
+        item.textContent = `Semana ${semana.numero_semana}: ${semana.titulo || "Sin título"}`;
+        contenedor.appendChild(item);
+      });
+    }
+  } catch (err) {
+    console.error("❌ Error inesperado:", err);
   }
 }
+
+document.addEventListener("DOMContentLoaded", cargarSemanas);
 
 async function crearSemanasIniciales() {
   const semanas = [];
