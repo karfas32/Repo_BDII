@@ -1,7 +1,7 @@
 /* ============================================================
    PROYECTO WEB - UPLA
    Archivo: login.js
-   Descripción: Autenticación con Supabase (tabla 'usuarios')
+   Descripción: Autenticación con Supabase (contraseña en texto plano)
    ============================================================ */
 
 const SESSION_KEY = "upla_session";
@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
   configurarEventos();
 });
 
-// ── Redirección si ya hay sesión ─────────────────────────────
 function verificarSesionActiva() {
   const sesion = obtenerSesion();
   if (sesion) redirigirPorRol(sesion.rol);
@@ -24,17 +23,16 @@ function obtenerSesion() {
   } catch (_) { return null; }
 }
 
-// ── Eventos del formulario ────────────────────────────────────
 function configurarEventos() {
-  const loginForm    = document.getElementById("loginForm");
-  const togglePass   = document.getElementById("togglePass");
-  const inputUsuario = document.getElementById("inputUsuario");
-  const inputPassword = document.getElementById("inputPassword");
+  const form     = document.getElementById("loginForm");
+  const toggle   = document.getElementById("togglePass");
+  const usuario  = document.getElementById("inputUsuario");
+  const password = document.getElementById("inputPassword");
 
-  if (loginForm)     loginForm.addEventListener("submit", manejarLogin);
-  if (togglePass)    togglePass.addEventListener("click", alternarVisibilidadPassword);
-  if (inputUsuario)  inputUsuario.addEventListener("input", ocultarError);
-  if (inputPassword) inputPassword.addEventListener("input", ocultarError);
+  if (form)     form.addEventListener("submit", manejarLogin);
+  if (toggle)   toggle.addEventListener("click", alternarVisibilidadPassword);
+  if (usuario)  usuario.addEventListener("input", ocultarError);
+  if (password) password.addEventListener("input", ocultarError);
 }
 
 // ── Login principal ───────────────────────────────────────────
@@ -52,135 +50,102 @@ async function manejarLogin(e) {
   mostrarCargando(true);
 
   try {
-    // Buscar usuario en Supabase (tabla 'usuarios')
+    if (!window.supabaseClient) throw new Error("Supabase no inicializado.");
+
+    // Buscar usuario comparando contraseña en texto plano
     const { data, error } = await window.supabaseClient
       .from("usuarios")
       .select("id, nombre, usuario, rol, password_hash")
       .eq("usuario", usuario)
+      .eq("password_hash", password)   // columna reutilizada para texto plano
       .eq("activo", true)
-      .single();
-
-    // Si la tabla no existe aún, caer en credenciales locales de emergencia
-    if (error && error.code === "PGRST116") {
-      // No encontrado → error normal
-      mostrarError("Usuario o contraseña incorrectos.");
-      mostrarCargando(false);
-      return;
-    }
+      .maybeSingle();
 
     if (error) {
-      // Posible error de red/tabla — fallback local solo para desarrollo
-      console.warn("⚠️ Sin conexión a tabla usuarios, usando fallback local:", error.message);
-      const fallback = autenticarLocal(usuario, password);
-      if (!fallback) { mostrarError("Usuario o contraseña incorrectos."); mostrarCargando(false); return; }
-      guardarSesionYRedirigir(fallback);
+      console.warn("⚠️ Error Supabase:", error.message);
+      mostrarError("Error de conexión. Intenta de nuevo.");
+      mostrarCargando(false);
       return;
     }
 
-    // Verificar contraseña: comparamos contra hash SHA-256 almacenado
-    // (si usas bcrypt en backend, cambia esto por un edge function)
-    const hashIngresado = await sha256(password);
-    if (!data || data.password_hash !== hashIngresado) {
+    if (!data) {
       mostrarError("Usuario o contraseña incorrectos.");
       mostrarCargando(false);
       return;
     }
 
-    guardarSesionYRedirigir({
-      id:      data.id,
-      nombre:  data.nombre,
-      usuario: data.usuario,
-      rol:     data.rol
-    });
+    guardarSesionYRedirigir(data);
 
   } catch (err) {
-    console.error("❌ Error de autenticación:", err);
-    mostrarError("Error al conectar. Intenta de nuevo.");
+    console.error("❌ Error:", err);
+    mostrarError("Error inesperado. Intenta de nuevo.");
     mostrarCargando(false);
   }
 }
 
-// ── SHA-256 nativo del navegador ──────────────────────────────
-async function sha256(texto) {
-  const buffer = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(texto)
-  );
-  return Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-// ── Fallback local (solo si Supabase falla en desarrollo) ─────
-function autenticarLocal(usuario, password) {
-  const CREDS = [
-    { usuario: "admin",      password: "upla2024", id: 1, nombre: "Admin",      rol: "admin"      },
-    { usuario: "estudiante", password: "123456",   id: 2, nombre: "Estudiante", rol: "estudiante" }
-  ];
-  return CREDS.find(c => c.usuario === usuario && c.password === password) || null;
-}
-
-// ── Guardar sesión y redirigir ────────────────────────────────
 function guardarSesionYRedirigir(usuario) {
-  const sesion = { id: usuario.id, nombre: usuario.nombre, usuario: usuario.usuario, rol: usuario.rol };
+  const sesion = {
+    id:      usuario.id,
+    nombre:  usuario.nombre,
+    usuario: usuario.usuario,
+    rol:     usuario.rol
+  };
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(sesion));
-
   mostrarExito(sesion);
   setTimeout(() => redirigirPorRol(sesion.rol), 800);
 }
 
 // ── UI helpers ────────────────────────────────────────────────
 function mostrarError(mensaje) {
-  const alertError   = document.getElementById("alertError");
-  const inputPassword = document.getElementById("inputPassword");
-  if (alertError) {
-    alertError.textContent = mensaje;
-    alertError.className = "alert alert-error";
-    alertError.classList.remove("hidden");
-    alertError.style.animation = "none";
-    void alertError.offsetWidth;
-    alertError.style.animation = "shakeX 0.4s ease";
+  const alertEl = document.getElementById("alertError");
+  const passEl  = document.getElementById("inputPassword");
+  if (alertEl) {
+    alertEl.textContent = mensaje;
+    alertEl.className   = "alert alert-error";
+    alertEl.classList.remove("hidden");
+    alertEl.style.animation = "none";
+    void alertEl.offsetWidth;
+    alertEl.style.animation = "shakeX 0.4s ease";
   }
-  if (inputPassword) inputPassword.style.borderColor = "var(--error)";
+  if (passEl) passEl.style.borderColor = "var(--error)";
 }
 
 function ocultarError() {
-  const alertError   = document.getElementById("alertError");
-  const inputPassword = document.getElementById("inputPassword");
-  if (alertError) alertError.classList.add("hidden");
-  if (inputPassword) inputPassword.style.borderColor = "";
+  document.getElementById("alertError")?.classList.add("hidden");
+  const passEl = document.getElementById("inputPassword");
+  if (passEl) passEl.style.borderColor = "";
 }
 
 function mostrarExito(usuario) {
-  const alertError = document.getElementById("alertError");
-  const btnLogin   = document.getElementById("btnLogin");
-  if (alertError) {
-    alertError.textContent = `✓ Bienvenido, ${escapeHtml(usuario.nombre)}. Redirigiendo...`;
-    alertError.className = "alert alert-success";
-    alertError.classList.remove("hidden");
+  const alertEl  = document.getElementById("alertError");
+  const btnLogin = document.getElementById("btnLogin");
+  if (alertEl) {
+    alertEl.textContent = `✓ Bienvenido, ${escapeHtml(usuario.nombre)}. Redirigiendo...`;
+    alertEl.className   = "alert alert-success";
+    alertEl.classList.remove("hidden");
   }
   if (btnLogin) { btnLogin.textContent = "Accediendo..."; btnLogin.disabled = true; }
 }
 
 function mostrarCargando(estado) {
-  const btnLogin = document.getElementById("btnLogin");
-  if (!btnLogin) return;
+  const btn = document.getElementById("btnLogin");
+  if (!btn) return;
   if (estado) {
-    btnLogin.innerHTML = '<span class="spinner"></span> Verificando...';
-    btnLogin.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Verificando...';
+    btn.disabled  = true;
   } else {
-    btnLogin.textContent = "Iniciar Sesión";
-    btnLogin.disabled = false;
+    btn.textContent = "Iniciar Sesión";
+    btn.disabled    = false;
   }
 }
 
 function alternarVisibilidadPassword() {
-  const inputPassword = document.getElementById("inputPassword");
-  const togglePass    = document.getElementById("togglePass");
-  if (!inputPassword || !togglePass) return;
-  const esPassword = inputPassword.type === "password";
-  inputPassword.type   = esPassword ? "text" : "password";
-  togglePass.textContent = esPassword ? "🙈" : "👁️";
+  const passEl   = document.getElementById("inputPassword");
+  const toggleEl = document.getElementById("togglePass");
+  if (!passEl || !toggleEl) return;
+  const esPass       = passEl.type === "password";
+  passEl.type        = esPass ? "text" : "password";
+  toggleEl.textContent = esPass ? "🙈" : "👁️";
 }
 
 function redirigirPorRol(rol) {
@@ -189,7 +154,9 @@ function redirigirPorRol(rol) {
 
 function escapeHtml(texto) {
   if (!texto) return "";
-  return texto.replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+  return String(texto).replace(/[&<>"']/g, m =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])
+  );
 }
 
 function cerrarSesion() {
