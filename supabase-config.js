@@ -4,10 +4,10 @@
    Descripción: Configuración de Supabase
    ============================================================ */
 
-const SUPABASE_URL = "https://fbccgpgzizsejipuhgtc.supabase.co"; // URL Base corregida (sin /rest/v1/)
+const SUPABASE_URL = "https://ckmggqrangyssmphbxgw.supabase.co"; // URL Base corregida (sin /rest/v1/)
 
 // Reemplaza esta cadena con tu clave pública "anon / public" real desde el panel de Supabase -> Project Settings -> API
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZiY2NncGd6aXpzZWppcHVoZ3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NTA2NTQsImV4cCI6MjA5ODEyNjY1NH0.9DltDRNPLht8EZdu2oi8ogZvJ1rz0KycPbJmaajGPcM"; 
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrbWdncXJhbmd5c3NtcGhieGd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMDU0MTMsImV4cCI6MjA5MTc4MTQxM30.ol2HlfOzHAd6_Z90OMPIi5pbKrOnGtOeNsaOizM5lCI"; 
 
 try {
   window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
